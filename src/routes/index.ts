@@ -4,6 +4,8 @@ import type {
   FastifyReply,
 } from "fastify";
 
+import { CreateUserController } from "../controllers/User/CreateUserController.js";
+
 export async function routes(
   fastify: FastifyInstance,
 ) {
@@ -13,4 +15,13 @@ export async function routes(
       return {ok: "ok"};
     },
   );
+
+  fastify.post(
+    "/client",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const createUserController = new CreateUserController();
+      return createUserController.handle(request, reply);
+    },
+  );
+
 }
