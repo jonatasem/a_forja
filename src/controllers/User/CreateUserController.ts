@@ -5,15 +5,14 @@ export interface CreateUserProps {
     name: string;
     phone: string;
     email: string;
-    address: string;
     password: string;
 }
 
 export class CreateUserController {
   async handle(request: FastifyRequest, reply: FastifyReply) {
-    const { name, phone, email, address, password } = request.body as CreateUserProps;
+    const { name, phone, email, password } = request.body as CreateUserProps;
 
-    if(!name || !phone || !email || !address || !password) {
+    if(!name || !phone || !email || !password) {
       return reply
       .status(400)
       .send({ error: "Todos os campos são obrigatórios." });
@@ -21,7 +20,7 @@ export class CreateUserController {
 
     try {
         const createUserService = new CreateUserService();
-        await createUserService.execute({ name, phone, email, address, password });
+        await createUserService.execute({ name, phone, email, password });
         return reply
           .status(201)
           .send({ message: "Usuário criado com sucesso." });

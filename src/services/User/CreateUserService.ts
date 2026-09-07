@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import { type CreateUserProps } from "../../controllers/User/CreateUserController.js";
 
 export class CreateUserService {
-  async execute({ name, phone, email, address, password }: CreateUserProps) {
+  async execute({ name, phone, email, password }: CreateUserProps) {
     const userExists = await prisma.user.findUnique({
       where: {
         phone,
@@ -19,11 +19,10 @@ export class CreateUserService {
     
     const user = await prisma.user.create({
       data: {
-        role: "CLIENT",
+        role: "client",
         name,
         phone,
         email,
-        address,
         password: passwordCripted
       },
         select: {
@@ -31,7 +30,6 @@ export class CreateUserService {
         name: true,
         phone: true,
         email: true,
-        address: true,
         role: true,
         createdAt: true,
       }

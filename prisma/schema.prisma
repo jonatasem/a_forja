@@ -8,14 +8,14 @@ datasource db {
 }
 
 enum Role {
-  CLIENT
-  BARBER
-  ADMIN
+  client
+  barber
+  admin
 }
 
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  role      Role     @default(CLIENT)
+  role      Role     @default(client)
   name      String
   phone     String   @unique
   email     String   @unique
