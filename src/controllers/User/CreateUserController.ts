@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { CreateUserService } from "../../services/User/CreateUserService.js";
-import { z } from "zod"; // Importa o Zod para construir os esquemas de validação
+import { z } from "zod";
 
 /**
  * DEFINIÇÃO DO ESQUEMA (SCHEMA)
@@ -31,7 +31,7 @@ export class CreateUserController {
      * VALIDAÇÃO SILENCIOSA (safeParse)
      * O método .safeParse() analisa o corpo da requisição (request.body).
      * Diferente do .parse() tradicional, o safeParse NÃO derruba o seu servidor se houver erro.
-     * Ele apenas retorna um objeto contendo { success: true/false } para você tratar manualmente.
+     * Ele apenas retorna um objeto contendo { success: true/false } 
      */
     const result = createUserSchema.safeParse(request.body);
 

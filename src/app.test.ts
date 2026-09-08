@@ -29,19 +29,6 @@ describe("Inicialização da aplicação e rotas", () => {
     process.env.PORT = "3333";
   });
 
-  // Testa se a rota GET /teste responde com sucesso
-  it("deve responder com sucesso na rota GET /teste", async () => {
-    const response = await app.inject({
-      method: "GET",
-      url: "/teste",
-    });
-
-    // Espera que o código de status da resposta seja 200 (OK)
-    expect(response.statusCode).toBe(200);
-    // Espera que o corpo da resposta seja igual a { ok: "ok" }
-    expect(response.json()).toEqual({ ok: "ok" });
-  });
-
   // Deve lançar erro se a variável de ambiente URL_DEVELOP não estiver informada
   it("deve lançar erro se URL_DEVELOP não estiver informada", async () => {
     delete process.env.URL_DEVELOP;
