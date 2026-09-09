@@ -1,15 +1,15 @@
-import { prisma } from '../../prisma/index.js';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { prisma } from "../../prisma/index.js";
+import bcrypt from "bcryptjs"; // Garantido a importação do bcryptjs
+import jwt from "jsonwebtoken";
 
 interface LoginServiceProps {
   phone: string;
   password: string;
 }
 
-export class LoginService {
+export class LoginUserService {
   async execute({ phone, password }: LoginServiceProps) {
-    // Busca o usuário na tabela 'user' pelo telefone
+    // 1. Busca o usuário pelo telefone no banco de dados
     const user = await prisma.user.findUnique({
       where: {
         phone,
@@ -17,29 +17,34 @@ export class LoginService {
     });
 
     if (!user) {
-      throw new Error('Telefone não encontrado.');
+      throw new Error("Telefone não encontrado.");
     }
 
-    // Compara a senha digitada com o hash salvo no banco
+    // 2. Compara a senha informada com o hash salvo no banco via bcryptjs
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new Error('Senha incorreta.');
+      throw new Error("Senha incorreta.");
     }
 
-    const secret = process.env.JWT_SECRET || 'default_secret';
+    const secretExists = process.env.JWT_SECRET;
+    if (!secretExists) {
+      throw new Error("Chave secreta do JWT não definida.");
+    }
 
-    // Gerando o token JWT passando dados úteis e o subject (id do usuário)
+    const secret = process.env.JWT_SECRET;
+
+    // Gera o token JWT assinado com a chave secreta
     const token = jwt.sign(
-      { 
+      {
         name: user.name,
-        phone: user.phone, 
-        role: user.role 
+        phone: user.phone,
+        role: user.role,
       },
       secret,
-      { 
-        subject: user.id, // O id fica no campo 'sub' do JWT
-        expiresIn: '2h'   // Define a expiração do token (ex: 2h)
+      {
+        subject: user.id,
+        expiresIn: "2h",
       }
     );
 

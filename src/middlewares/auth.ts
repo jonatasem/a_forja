@@ -36,7 +36,16 @@ export async function authenticate(
         });
     }
 
-    const secret = process.env.JWT_SECRET || "default_secret";
+    const secretExists = process.env.JWT_SECRET;
+
+    if (!secretExists) {
+      return reply.status(500).send({
+        error: "Erro interno no servidor.",
+        message: "A variável de ambiente JWT_SECRET não está definida.",
+      });
+    }
+
+    const secret = secretExists;
 
   try {
     // Valida se o token é autêntico e se não expirou

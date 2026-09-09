@@ -2,10 +2,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { CreateUserService } from "../../services/User/CreateUserService.js";
 import { z } from "zod";
 
-/**
- * DEFINIÇÃO DO ESQUEMA (SCHEMA)
- * Cada tipo (z.string, z.email, z.number) valida o formato do dado recebido.
- */
+
 export const createUserSchema = z.object({
   // z.string().min(1) garante que o campo seja texto e não seja enviado vazio ("")
   name: z.string().min(1, { message: "O nome é obrigatório" }),
@@ -18,10 +15,7 @@ export const createUserSchema = z.object({
   password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres" }),
 });
 
-/**
- * INFERÊNCIA DE TIPAGEM AUTOMÁTICA
- * Se você adicionar um campo novo no schema acima, a tipagem 'CreateUserProps' atualiza sozinha!
- */
+// Se adicionar um campo novo no schema acima, a tipagem 'CreateUserProps' atualiza sozinha!
 export type CreateUserProps = z.infer<typeof createUserSchema>;
 
 export class CreateUserController {
@@ -76,7 +70,6 @@ export class CreateUserController {
           .status(400)
           .send({ error: error.message });
       }
-
       return reply
         .status(500)
         .send({ error: "Erro interno no servidor." });

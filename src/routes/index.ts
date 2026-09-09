@@ -34,7 +34,7 @@ export async function routes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       return reply.status(200).send({
         message: "Acesso autorizado",
-        user: request.user, // Contém sub, name, email, phone e role extraídos do token
+        user: request.user,
       });
     }
   );
