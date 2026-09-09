@@ -7,6 +7,7 @@ import type {
 import { CreateUserController } from "../controllers/User/CreateUserController.js";
 import { LoginUserController } from "../controllers/Login/LoginUserController.js";
 import { authenticate } from "../middlewares/auth.js";
+import { CreateServiceController } from "../controllers/Service/CreateServiceController.js";
 
 export async function routes(fastify: FastifyInstance) {
   // Rota pública para criação de usuário
@@ -28,14 +29,12 @@ export async function routes(fastify: FastifyInstance) {
   );
 
   // Rota protegida por token JWT
-  fastify.get(
-    "/me",
+  fastify.post(
+    "/services",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      return reply.status(200).send({
-        message: "Acesso autorizado",
-        user: request.user,
-      });
+      const createServiceController = new CreateServiceController();
+      return createServiceController.handle(request, reply);
     }
   );
 }

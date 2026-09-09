@@ -9,7 +9,7 @@ interface LoginServiceProps {
 
 export class LoginUserService {
   async execute({ phone, password }: LoginServiceProps) {
-    // 1. Busca o usuário pelo telefone no banco de dados
+    // Busca o usuário pelo telefone no banco de dados
     const user = await prisma.user.findUnique({
       where: {
         phone,
@@ -20,7 +20,7 @@ export class LoginUserService {
       throw new Error("Telefone não encontrado.");
     }
 
-    // 2. Compara a senha informada com o hash salvo no banco via bcryptjs
+    // Compara a senha informada com o hash salvo no banco via bcryptjs
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
