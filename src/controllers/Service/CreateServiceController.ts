@@ -14,6 +14,14 @@ export type CreateServiceProps = z.infer<typeof createServiceSchema>;
     
 export class CreateServiceController {
   async handle(request: FastifyRequest, reply: FastifyReply) {
+    const userRole = request.user?.role;
+
+    if (!userRole) {
+      return reply
+      .status(401)
+      .send({ error: "Sessão inválida ou usuário não autenticado." });
+    }
+
     const result = createServiceSchema.safeParse(request.body);
 
     if (!result.success) {
@@ -35,7 +43,8 @@ export class CreateServiceController {
         name,
         description,
         price,
-        duration
+        duration,
+        userRole,
       });
 
       return reply.status(201).send(service);
