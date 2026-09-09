@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { LoginService } from '../../services/Login/LoginUserService.js';
+import { LoginUserService } from '../../services/Login/LoginUserService.js';
 
 // Define o esquema
 export const loginSchema = z.object({
@@ -27,13 +27,13 @@ export class LoginUserController {
 
     try {
       // Instancia a classe
-      const loginService = new LoginService();
+      const loginUserService = new LoginUserService();
       
-      const dataLoginService = await loginService.execute({ phone, password });
+      const dataLoginUserService = await loginUserService.execute({ phone, password });
 
       return reply.status(200).send({
         message: 'Login realizado com sucesso.',
-        ...dataLoginService,
+        ...dataLoginUserService,
       });
     } catch (error) {
       if (error instanceof Error) {

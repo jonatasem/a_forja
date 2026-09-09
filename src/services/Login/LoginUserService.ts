@@ -1,5 +1,5 @@
 import { prisma } from "../../prisma/index.js";
-import bcrypt from "bcryptjs"; // Garantido a importação do bcryptjs
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 interface LoginServiceProps {
@@ -27,12 +27,10 @@ export class LoginUserService {
       throw new Error("Senha incorreta.");
     }
 
-    const secretExists = process.env.JWT_SECRET;
-    if (!secretExists) {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
       throw new Error("Chave secreta do JWT não definida.");
     }
-
-    const secret = process.env.JWT_SECRET;
 
     // Gera o token JWT assinado com a chave secreta
     const token = jwt.sign(
