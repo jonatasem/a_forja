@@ -2,7 +2,6 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { CreateUserService } from "../../services/User/CreateUserService.js";
 import { z } from "zod";
 
-
 export const createUserSchema = z.object({
   // z.string().min(1) garante que o campo seja texto e não seja enviado vazio ("")
   name: z.string().min(1, { message: "O nome é obrigatório" }),
