@@ -19,7 +19,7 @@ export class CreateAppointmentController {
     const result = createAppointmentSchema.safeParse(request.body);
 
     if (!result.success) {
-      const { fieldErrors } = z.flattenError(result.error);
+      const { fieldErrors } = result.error.flatten();
       return reply.status(400).send({ error: "Dados inválidos.", details: fieldErrors });
     }
 

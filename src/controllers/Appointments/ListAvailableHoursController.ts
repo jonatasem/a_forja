@@ -17,7 +17,6 @@ export class ListAvailableHoursController {
     const result = listAvailableHoursQuerySchema.safeParse(request.query);
 
     if (!result.success) {
-      // Uso correto do método .flatten() do próprio objeto de erro do Zod
       const { fieldErrors } = result.error.flatten();
 
       return reply.status(400).send({

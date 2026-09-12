@@ -14,7 +14,7 @@ function timeToMinutes(time: string): number {
 function minutesToTime(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
   const minutes = (totalMinutes % 60).toString().padStart(2, "0");
-  return `\({hours}:\){minutes}`;
+  return `${hours}:${minutes}`;
 }
 
 export class ListAvailableHoursService {
@@ -65,6 +65,10 @@ export class ListAvailableHoursService {
       return { start, end };
     });
 
+    const now = new Date();
+    const isToday = searchDate.toDateString() === now.toDateString();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
     const slotStep = 30;
     const serviceDuration = service.duration;
     const availableHours: string[] = [];
@@ -72,6 +76,11 @@ export class ListAvailableHoursService {
     for (let current = workStartMinutes; current + serviceDuration <= workEndMinutes; current += slotStep) {
       const slotStart = current;
       const slotEnd = current + serviceDuration;
+
+      // Descarta horários que já passaram caso a busca seja para hoje
+      if (isToday && slotStart <= currentMinutes) {
+        continue;
+      }
 
       if (breakStartMinutes !== null && breakEndMinutes !== null) {
         if (slotStart < breakEndMinutes && slotEnd > breakStartMinutes) {

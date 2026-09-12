@@ -36,10 +36,16 @@ export class SetWorkingHoursController {
         .send({ error: 'Sessão inválida ou usuário não autenticado.' });
     }
 
+    if (userRole !== 'barber' && userRole !== 'admin') {
+      return reply
+        .status(403)
+        .send({ error: 'Apenas barbeiros ou gestores podem configurar horários.' });
+    }
+
     const result = setWorkingHoursSchema.safeParse(request.body);
 
     if (!result.success) {
-      const { fieldErrors } = z.flattenError(result.error);
+      const { fieldErrors } = result.error.flatten();
 
       return reply.status(400).send({
         error: 'Dados de horário inválidos.',

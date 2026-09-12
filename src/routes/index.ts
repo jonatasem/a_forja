@@ -1,6 +1,10 @@
-import type { FastifyInstance } from "fastify";
-import { authenticate } from "../middlewares/auth.js";
+import type {
+  FastifyInstance,
+  FastifyRequest,
+  FastifyReply,
+} from "fastify";
 
+import { authenticate } from "../middlewares/auth.js";
 import { CreateUserController } from "../controllers/User/CreateUserController.js";
 import { LoginUserController } from "../controllers/Login/LoginUserController.js";
 import { CreateServiceController } from "../controllers/Service/CreateServiceController.js";
@@ -10,25 +14,80 @@ import { CreateAppointmentController } from "../controllers/Appointments/CreateA
 import { ListAvailableHoursController } from "../controllers/Appointments/ListAvailableHoursController.js";
 
 export async function routes(fastify: FastifyInstance) {
-  // Instâncias dos controllers
-  const createUserController = new CreateUserController();
-  const loginUserController = new LoginUserController();
-  const createServiceController = new CreateServiceController();
-  const listServiceController = new ListServiceController();
-  const setWorkingHoursController = new SetWorkingHoursController();
-  const createAppointmentController = new CreateAppointmentController();
-  const listAvailableHoursController = new ListAvailableHoursController();
 
   // ROTAS PÚBLICAS
-  fastify.post("/client", (req, reply) => createUserController.handle(req, reply));
-  fastify.post("/login", (req, reply) => loginUserController.handle(req, reply));
-
-  // ROTAS PROTEGIDAS (JWT)
-  fastify.post("/services", { onRequest: [authenticate] }, (req, reply) => createServiceController.handle(req, reply));
-  fastify.get("/services", { onRequest: [authenticate] }, (req, reply) => listServiceController.handle(req, reply));
-  fastify.post("/working-hours", { onRequest: [authenticate] }, (req, reply) => setWorkingHoursController.handle(req, reply));
   
+  // Cria um novo cliente
+  fastify.post(
+    "/client",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const createUserController = new CreateUserController();
+      return createUserController.handle(request, reply);
+    }
+  );
+
+  // Fazer login
+  fastify.post(
+    "/login",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const loginUserController = new LoginUserController();
+      return loginUserController.handle(request, reply);
+    }
+  );
+
+  //=====================//
+
+  // ROTAS PROTEGIDAS POR TOKEN JWT
+
+  // Cadastra um novo serviço
+  fastify.post(
+    "/services",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const createServiceController = new CreateServiceController();
+      return createServiceController.handle(request, reply);
+    }
+  );
+
+  // Busca os serviços
+  fastify.get(
+    "/services",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const listServiceController = new ListServiceController();
+      return listServiceController.handle(request, reply);
+    }
+  )
+
+  fastify.post(
+    "/working-hours",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const setWorkingHoursController = new SetWorkingHoursController();
+      return setWorkingHoursController.handle(request, reply);
+    }
+  )
+
   // AGENDAMENTOS
-  fastify.get("/appointments/available", { onRequest: [authenticate] }, (req, reply) => listAvailableHoursController.handle(req, reply));
-  fastify.post("/appointments", { onRequest: [authenticate] }, (req, reply) => createAppointmentController.handle(req, reply));
+
+  // cria um novo agendamento
+  fastify.post(
+    "/appointments",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const createAppointmentController = new CreateAppointmentController();
+      return createAppointmentController.handle(request, reply);
+    }
+  )
+
+  // busca os horarios disponiveis do barbeiro
+  fastify.get(
+    "/appointments/available",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const listAvailableHoursController = new ListAvailableHoursController();
+      return listAvailableHoursController.handle(request, reply);
+    }
+  )
 }
+
