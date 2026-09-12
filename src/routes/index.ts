@@ -10,6 +10,8 @@ import { LoginUserController } from "../controllers/Login/LoginUserController.js
 import { CreateServiceController } from "../controllers/Service/CreateServiceController.js";
 import { ListServiceController } from "../controllers/Service/ListServiceController.js";
 import { SetWorkingHoursController } from "../controllers/WorkingHours/SetWorkingHoursController.js";
+import { CreateAppointmentController } from "../controllers/Appointments/CreateAppointmentController.js";
+import { ListAvailableHoursController } from "../controllers/Appointments/ListAvailableHoursController.js";
 
 export async function routes(fastify: FastifyInstance) {
 
@@ -33,8 +35,7 @@ export async function routes(fastify: FastifyInstance) {
     }
   );
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  //=====================//
 
   // ROTAS PROTEGIDAS POR TOKEN JWT
 
@@ -60,13 +61,33 @@ export async function routes(fastify: FastifyInstance) {
 
   fastify.post(
     "/working-hours",
-        { onRequest: [authenticate] },
+    { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const setWorkingHoursController = new SetWorkingHoursController();
       return setWorkingHoursController.handle(request, reply);
     }
   )
 
+  // AGENDAMENTOS
 
+  // cria um novo agendamento
+  fastify.post(
+    "/appointments",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const createAppointmentController = new CreateAppointmentController();
+      return createAppointmentController.handle(request, reply);
+    }
+  )
 
+  // busca os horarios disponiveis do barbeiro
+  fastify.get(
+    "/appointments/available",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const listAvailableHoursController = new ListAvailableHoursController();
+      return listAvailableHoursController.handle(request, reply);
+    }
+  )
 }
+
