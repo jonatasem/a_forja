@@ -9,6 +9,7 @@ import { CreateUserController } from "../controllers/User/CreateUserController.j
 import { LoginUserController } from "../controllers/Login/LoginUserController.js";
 import { CreateServiceController } from "../controllers/Service/CreateServiceController.js";
 import { ListServiceController } from "../controllers/Service/ListServiceController.js";
+import { SetWorkingHoursController } from "../controllers/WorkingHours/SetWorkingHoursController.js";
 
 export async function routes(fastify: FastifyInstance) {
 
@@ -56,4 +57,16 @@ export async function routes(fastify: FastifyInstance) {
       return listServiceController.handle(request, reply);
     }
   )
+
+  fastify.post(
+    "/working-hours",
+        { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const setWorkingHoursController = new SetWorkingHoursController();
+      return setWorkingHoursController.handle(request, reply);
+    }
+  )
+
+
+
 }

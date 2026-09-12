@@ -20,11 +20,12 @@ export class SetWorkingHoursService {
     breakEnd,
     active = true,
   }: SetWorkingHoursProps) {
-    const barberExists = await prisma.barber.findUnique({
+    // Busca na tabela de User e valida se a role é 'barber'
+    const barberExists = await prisma.user.findUnique({
       where: { id: barberId },
     });
 
-    if (!barberExists) {
+    if (!barberExists || barberExists.role !== 'barber') {
       throw new Error('Barbeiro não encontrado.');
     }
 
