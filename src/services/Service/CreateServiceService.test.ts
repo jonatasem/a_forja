@@ -17,6 +17,7 @@ describe("CreateServiceService", () => {
     description: "Corte masculino tradicional",
     price: 50.0,
     duration: 30,
+    userRole: "BARBER",
   };
 
   it("deve criar um novo serviço com sucesso", async () => {
@@ -25,7 +26,10 @@ describe("CreateServiceService", () => {
 
     const mockCreatedService = {
       id: "service-id-123",
-      ...mockServiceData,
+      name: mockServiceData.name,
+      description: mockServiceData.description,
+      price: mockServiceData.price,
+      duration: mockServiceData.duration,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -56,6 +60,16 @@ describe("CreateServiceService", () => {
     });
 
     expect(result).toEqual(mockCreatedService);
+  });
+
+  it("deve lançar um erro se o usuário não tiver permissão de gerenciamento", async () => {
+    // ACT & ASSERT: Tenta criar serviço com uma role sem permissão
+    await expect(
+      createServiceService.execute({
+        ...mockServiceData,
+        userRole: "CLIENT",
+      })
+    ).rejects.toThrow("Apenas barbeiros têm permissão para criar serviços.");
   });
 
   it("deve lançar um erro se já existir um serviço cadastrado com o mesmo nome", async () => {
