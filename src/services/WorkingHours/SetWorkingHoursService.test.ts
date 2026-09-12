@@ -5,10 +5,11 @@ describe('SetWorkingHoursService', () => {
   let barberId: string;
 
   beforeAll(async () => {
-    const barber = await prisma.barber.create({
+    const barber = await prisma.user.create({
       data: {
+        role: 'barber',
         name: 'Barbeiro Teste',
-        email: 'barbeiro.teste@email.com',
+        email: 'barbeiro.horario.teste@email.com',
         phone: '11988887777',
         password: 'password123',
       },
@@ -17,8 +18,10 @@ describe('SetWorkingHoursService', () => {
   });
 
   afterAll(async () => {
-    await prisma.workingHours.deleteMany({ where: { barberId } });
-    await prisma.barber.delete({ where: { id: barberId } });
+    if (barberId) {
+      await prisma.workingHours.deleteMany({ where: { barberId } });
+      await prisma.user.deleteMany({ where: { id: barberId } });
+    }
   });
 
   it('deve cadastrar o horário de trabalho com sucesso', async () => {

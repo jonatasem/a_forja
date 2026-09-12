@@ -7,31 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  phone     String   @unique
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  passwordResets PasswordReset[]
-  appointments   Appointment[]
+enum Role {
+  client
+  barber
+  admin
 }
 
-model Barber {
+model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  role      Role     @default(client)
   name      String
   phone     String   @unique
   email     String   @unique
   password  String
-  active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workingHours WorkingHours[]
-  appointments Appointment[]
+  passwordResets     PasswordReset[]
+  clientAppointments Appointment[]    @relation("ClientAppointments")
+  barberAppointments Appointment[]    @relation("BarberAppointments")
+  workingHours       WorkingHours[]
 }
 
 model PasswordReset {
@@ -46,7 +41,7 @@ model PasswordReset {
 model WorkingHours {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   barberId   String   @db.ObjectId
-  barber     Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  barber     User     @relation(fields: [barberId], references: [id], onDelete: Cascade)
   dayOfWeek  Int      // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
   startTime  String   // Formato "08:00"
   endTime    String   // Formato "18:00"
@@ -64,7 +59,7 @@ model Service {
   name        String
   description String
   price       Float
-  duration    Int           // Duração em minutos (ex: 30, 45, 60)
+  duration    Int           // Duração em minutos
   active      Boolean       @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -74,14 +69,14 @@ model Service {
 
 model Appointment {
   id        String            @id @default(auto()) @map("_id") @db.ObjectId
-  date      DateTime          // Data e hora de início do atendimento
+  date      DateTime
   status    AppointmentStatus @default(PENDING)
   
   clientId  String            @db.ObjectId
-  client    User              @relation(fields: [clientId], references: [id])
+  client    User              @relation("ClientAppointments", fields: [clientId], references: [id])
   
   barberId  String            @db.ObjectId
-  barber    Barber            @relation(fields: [barberId], references: [id])
+  barber    User              @relation("BarberAppointments", fields: [barberId], references: [id])
   
   serviceId String            @db.ObjectId
   service   Service           @relation(fields: [serviceId], references: [id])

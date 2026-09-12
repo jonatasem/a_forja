@@ -31,10 +31,7 @@ export class LoginUserController {
       
       const dataLoginUserService = await loginUserService.execute({ phone, password });
 
-      return reply.status(200).send({
-        message: 'Login realizado com sucesso.',
-        ...dataLoginUserService,
-      });
+      return reply.status(200).send({...dataLoginUserService});
     } catch (error) {
       if (error instanceof Error) {
         return reply.status(400).send({ error: error.message });
