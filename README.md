@@ -24,3 +24,20 @@
 	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9uYXRhcyBFbGllc2VyIE1vcmVpcmEiLCJwaG9uZSI6IjE4OTk5OTk5OTk5Iiwicm9sZSI6ImNsaWVudCIsImlhdCI6MTc4ODg4MjE1MSwiZXhwIjoxNzg4ODg5MzUxLCJzdWIiOiI2YWEwMmNlMmE4NzkzZWFmZWUyYTU0ZTYifQ.2XwhEN_M8TuJxde7VNxy-eymeh7ywXTpCBIt2wUUrn8"
 }
 ```
+
+
+> **RETORNO DE GET /SERVICES**
+
+```bash
+[
+	{
+		"id": "6aa1a4c6450caf0eaa1f9245",
+		"name": "Corte Premium",
+		"description": "Corte premium com massagem capilar",
+		"price": 45,
+		"duration": 120,
+		"active": true,
+		"createdAt": "2026-09-09T18:26:14.587Z"
+	}
+]
+```
