@@ -33,8 +33,9 @@ export class CreateAppointmentService {
     const service = await prisma.service.findUnique({ where: { id: serviceId } });
     if (!service || !service.active) throw new Error("Serviço inativo ou inexistente.");
 
-    const dayOfWeek = appointmentDate.getDay();
-    const appStartMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
+    // Uso de métodos UTC para evitar distorções de timezone local
+    const dayOfWeek = appointmentDate.getUTCDay();
+    const appStartMinutes = appointmentDate.getUTCHours() * 60 + appointmentDate.getUTCMinutes();
     const appEndMinutes = appStartMinutes + service.duration;
 
     const workingHour = await prisma.workingHours.findFirst({
@@ -61,10 +62,10 @@ export class CreateAppointmentService {
     }
 
     const startOfDay = new Date(appointmentDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    startOfDay.setUTCHours(0, 0, 0, 0);
 
     const endOfDay = new Date(appointmentDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
     const existingAppointments = await prisma.appointment.findMany({
       where: {
@@ -77,7 +78,7 @@ export class CreateAppointmentService {
 
     const hasConflict = existingAppointments.some((app) => {
       const appDate = new Date(app.date);
-      const start = appDate.getHours() * 60 + appDate.getMinutes();
+      const start = appDate.getUTCHours() * 60 + appDate.getUTCMinutes();
       const end = start + app.service.duration;
       return appStartMinutes < end && appEndMinutes > start;
     });
