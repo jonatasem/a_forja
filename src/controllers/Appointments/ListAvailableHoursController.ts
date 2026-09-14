@@ -1,14 +1,14 @@
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import { z } from 'zod';
-import { ListAvailableHoursService } from '../../services/Appointments/ListAvailableHoursService.js';
+import type { FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import { ListAvailableHoursService } from "../../services/Appointments/ListAvailableHoursService.js";
 
 export const listAvailableHoursQuerySchema = z.object({
-  barberId: z.string().min(1, { message: 'O ID do barbeiro é obrigatório.' }),
-  serviceId: z.string().min(1, { message: 'O ID do serviço é obrigatório.' }),
+  barberId: z.string().min(1, { message: "O ID do barbeiro é obrigatório." }),
+  serviceId: z.string().min(1, { message: "O ID do serviço é obrigatório." }),
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, {
-      message: 'A data deve estar no formato YYYY-MM-DD.',
+      message: "A data deve estar no formato YYYY-MM-DD.",
     }),
 });
 
@@ -17,10 +17,11 @@ export class ListAvailableHoursController {
     const result = listAvailableHoursQuerySchema.safeParse(request.query);
 
     if (!result.success) {
-      const { fieldErrors } = result.error.flatten();
+      // Substituído result.error.flatten() por z.flattenError(result.error)
+      const { fieldErrors } = z.flattenError(result.error);
 
       return reply.status(400).send({
-        error: 'Parâmetros de busca inválidos.',
+        error: "Parâmetros de busca inválidos.",
         details: fieldErrors,
       });
     }
@@ -36,12 +37,10 @@ export class ListAvailableHoursController {
       });
 
       return reply.status(200).send(availableHours);
-    } catch (error) {
-      if (error instanceof Error) {
-        return reply.status(400).send({ error: error.message });
-      }
-
-      return reply.status(500).send({ error: 'Erro interno no servidor.' });
+    } catch (err) {
+      return reply.status(400).send({
+        error: err instanceof Error ? err.message : "Erro inesperado ao listar horários disponíveis.",
+      });
     }
   }
 }

@@ -1,6 +1,6 @@
 import { prisma } from "../../prisma/index.js";
 
-export interface ListAvailableHoursProps {
+export interface ListAvailableHoursDTO {
   barberId: string;
   serviceId: string;
   date: string; // Formato: "YYYY-MM-DD"
@@ -18,7 +18,7 @@ function minutesToTime(totalMinutes: number): string {
 }
 
 export class ListAvailableHoursService {
-  async execute({ barberId, serviceId, date }: ListAvailableHoursProps) {
+  async execute({ barberId, serviceId, date }: ListAvailableHoursDTO) {
     const barber = await prisma.user.findUnique({ where: { id: barberId } });
     if (!barber || barber.role !== "barber") throw new Error("Barbeiro não encontrado.");
 
@@ -77,7 +77,6 @@ export class ListAvailableHoursService {
       const slotStart = current;
       const slotEnd = current + serviceDuration;
 
-      // Descarta horários que já passaram caso a busca seja para hoje
       if (isToday && slotStart <= currentMinutes) {
         continue;
       }
