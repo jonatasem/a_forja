@@ -96,8 +96,8 @@ model Appointment {
 }
 
 enum AppointmentStatus {
-  pending
-  confirmed
-  canceled
-  finished
+  PENDING
+  CONFIRMED
+  CANCELED
+  FINISHED
 }
