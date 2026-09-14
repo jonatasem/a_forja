@@ -1,4 +1,5 @@
 import { prisma } from "../../prisma/index.js";
+import type { Prisma } from "@prisma/client";
 
 export interface CreateAppointmentDTO {
   clientId: string;
@@ -6,6 +7,10 @@ export interface CreateAppointmentDTO {
   serviceId: string;
   date: string | Date;
 }
+
+type AppointmentWithService = Prisma.AppointmentGetPayload<{
+  include: { service: true };
+}>;
 
 function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(":").map(Number);
@@ -33,7 +38,6 @@ export class CreateAppointmentService {
     const service = await prisma.service.findUnique({ where: { id: serviceId } });
     if (!service || !service.active) throw new Error("Serviço inativo ou inexistente.");
 
-    // Uso de métodos UTC para evitar distorções de timezone local
     const dayOfWeek = appointmentDate.getUTCDay();
     const appStartMinutes = appointmentDate.getUTCHours() * 60 + appointmentDate.getUTCMinutes();
     const appEndMinutes = appStartMinutes + service.duration;
@@ -76,7 +80,7 @@ export class CreateAppointmentService {
       include: { service: true },
     });
 
-    const hasConflict = existingAppointments.some((app) => {
+    const hasConflict = existingAppointments.some((app: AppointmentWithService) => {
       const appDate = new Date(app.date);
       const start = appDate.getUTCHours() * 60 + appDate.getUTCMinutes();
       const end = start + app.service.duration;
