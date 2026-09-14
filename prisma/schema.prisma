@@ -33,6 +33,20 @@ model User {
   clientAppointments Appointment[]    @relation("ClientAppointments")
   barberAppointments Appointment[]    @relation("BarberAppointments")
   workingHours       WorkingHours[]
+  scheduleBlocks     ScheduleBlock[]
+}
+
+model ScheduleBlock {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  barberId  String   @db.ObjectId
+  barber    User     @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([barberId, startTime, endTime])
 }
 
 model PasswordReset {
