@@ -5,7 +5,9 @@ import { CreateAppointmentService } from "../../services/Appointments/CreateAppo
 export const createAppointmentSchema = z.object({
   barberId: z.string().min(1, { message: "O ID do barbeiro é obrigatório." }),
   serviceId: z.string().min(1, { message: "O ID do serviço é obrigatório." }),
-  date: z.string().datetime({ message: "Formato de data inválido (use ISO 8601)." }),
+  date: z.string().refine((val) => !isNaN(Date.parse(val)), {
+  message: "Formato de data inválido.",
+}),
 });
 
 export class CreateAppointmentController {
