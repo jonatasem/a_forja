@@ -1,7 +1,7 @@
 import { ForgotPasswordService } from "./ForgotPasswordService.js";
 import { ResetPasswordService } from "./ResetPasswordService.js";
 import { prisma } from "../../prisma/index.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 jest.mock("../../prisma/index.js", () => ({
   prisma: {
@@ -17,7 +17,7 @@ jest.mock("../../prisma/index.js", () => ({
   },
 }));
 
-jest.mock("bcrypt", () => ({
+jest.mock("bcryptjs", () => ({
   hash: jest.fn().mockResolvedValue("hashed_password"),
 }));
 
