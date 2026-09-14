@@ -18,6 +18,7 @@ import { ListAppointmentsController } from "../controllers/Appointments/ListAppo
 import { UpdateAppointmentStatusController } from "../controllers/Appointments/UpdateAppointmentStatusController.js";
 import { ForgotPasswordController } from "../controllers/PasswordReset/ForgotPasswordController.js";
 import { ResetPasswordController } from "../controllers/PasswordReset/ResetePasswordController.js";
+import { CreateScheduleBlockController } from "../controllers/ScheduleBlock/CreateScheduleBlockController.js";
 
 export async function routes(fastify: FastifyInstance) {
 
@@ -151,6 +152,16 @@ export async function routes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const getBarberController = new GetBarberController();
       return getBarberController.handle(request, reply);
+    }
+  );
+
+  // Bloqueio de agenda (Folgas / Exceções)
+  fastify.post(
+    "/schedule-blocks",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const createScheduleBlockController = new CreateScheduleBlockController();
+      return createScheduleBlockController.handle(request, reply);
     }
   );
 
