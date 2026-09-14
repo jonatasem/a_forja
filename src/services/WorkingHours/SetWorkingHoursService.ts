@@ -1,6 +1,6 @@
-import { prisma } from '../../prisma/index.js';
+import { prisma } from "../../prisma/index.js";
 
-export interface SetWorkingHoursProps {
+export interface SetWorkingHoursDTO {
   barberId: string;
   dayOfWeek: number;
   startTime: string;
@@ -19,14 +19,13 @@ export class SetWorkingHoursService {
     breakStart,
     breakEnd,
     active = true,
-  }: SetWorkingHoursProps) {
-    // Busca na tabela de User e valida se a role é 'barber'
+  }: SetWorkingHoursDTO) {
     const barberExists = await prisma.user.findUnique({
       where: { id: barberId },
     });
 
-    if (!barberExists || barberExists.role !== 'barber') {
-      throw new Error('Barbeiro não encontrado.');
+    if (!barberExists || barberExists.role !== "barber") {
+      throw new Error("Barbeiro não encontrado.");
     }
 
     const workingHour = await prisma.workingHours.upsert({

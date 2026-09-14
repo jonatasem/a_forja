@@ -1,56 +1,104 @@
-import { SetWorkingHoursService } from './SetWorkingHoursService.js';
-import { prisma } from '../../prisma/index.js';
+import { SetWorkingHoursService } from "./SetWorkingHoursService.js";
+import { prisma } from "../../prisma/index.js";
 
-describe('SetWorkingHoursService', () => {
-  let barberId: string;
+jest.mock("../../prisma/index.js", () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+    workingHours: {
+      upsert: jest.fn(),
+    },
+  },
+}));
 
-  beforeAll(async () => {
-    const barber = await prisma.user.create({
-      data: {
-        role: 'barber',
-        name: 'Barbeiro Teste',
-        email: 'barbeiro.horario.teste@email.com',
-        phone: '11988887777',
-        password: 'password123',
+describe("SetWorkingHoursService", () => {
+  let setWorkingHoursService: SetWorkingHoursService;
+
+  beforeEach(() => {
+    setWorkingHoursService = new SetWorkingHoursService();
+    jest.clearAllMocks();
+  });
+
+  const mockWorkingHoursData = {
+    barberId: "barber-123",
+    dayOfWeek: 1,
+    startTime: "08:00",
+    endTime: "18:00",
+    breakStart: "12:00",
+    breakEnd: "13:00",
+    active: true,
+  };
+
+  it("deve definir ou atualizar o horário de trabalho com sucesso", async () => {
+    const mockBarber = {
+      id: "barber-123",
+      name: "Barbeiro Teste",
+      role: "barber",
+    };
+
+    const mockWorkingHoursResult = {
+      id: "wh-123",
+      ...mockWorkingHoursData,
+    };
+
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockBarber);
+    (prisma.workingHours.upsert as jest.Mock).mockResolvedValue(mockWorkingHoursResult);
+
+    const result = await setWorkingHoursService.execute(mockWorkingHoursData);
+
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: mockWorkingHoursData.barberId },
+    });
+
+    expect(prisma.workingHours.upsert).toHaveBeenCalledWith({
+      where: {
+        barberId_dayOfWeek: {
+          barberId: mockWorkingHoursData.barberId,
+          dayOfWeek: mockWorkingHoursData.dayOfWeek,
+        },
+      },
+      update: {
+        startTime: mockWorkingHoursData.startTime,
+        endTime: mockWorkingHoursData.endTime,
+        breakStart: mockWorkingHoursData.breakStart,
+        breakEnd: mockWorkingHoursData.breakEnd,
+        active: mockWorkingHoursData.active,
+      },
+      create: {
+        barberId: mockWorkingHoursData.barberId,
+        dayOfWeek: mockWorkingHoursData.dayOfWeek,
+        startTime: mockWorkingHoursData.startTime,
+        endTime: mockWorkingHoursData.endTime,
+        breakStart: mockWorkingHoursData.breakStart,
+        breakEnd: mockWorkingHoursData.breakEnd,
+        active: mockWorkingHoursData.active,
       },
     });
-    barberId = barber.id;
+
+    expect(result).toEqual(mockWorkingHoursResult);
   });
 
-  afterAll(async () => {
-    if (barberId) {
-      await prisma.workingHours.deleteMany({ where: { barberId } });
-      await prisma.user.deleteMany({ where: { id: barberId } });
-    }
+  it("deve lançar um erro se o barbeiro não for encontrado", async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+
+    await expect(setWorkingHoursService.execute(mockWorkingHoursData)).rejects.toThrow(
+      "Barbeiro não encontrado."
+    );
+
+    expect(prisma.workingHours.upsert).not.toHaveBeenCalled();
   });
 
-  it('deve cadastrar o horário de trabalho com sucesso', async () => {
-    const service = new SetWorkingHoursService();
-
-    const result = await service.execute({
-      barberId,
-      dayOfWeek: 1,
-      startTime: '08:00',
-      endTime: '18:00',
-      breakStart: '12:00',
-      breakEnd: '13:00',
+  it("deve lançar um erro se o usuário encontrado não tiver a role 'barber'", async () => {
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      id: "barber-123",
+      role: "client",
     });
 
-    expect(result).toHaveProperty('id');
-    expect(result.barberId).toBe(barberId);
-    expect(result.startTime).toBe('08:00');
-  });
+    await expect(setWorkingHoursService.execute(mockWorkingHoursData)).rejects.toThrow(
+      "Barbeiro não encontrado."
+    );
 
-  it('deve lançar erro caso o barbeiro não exista', async () => {
-    const service = new SetWorkingHoursService();
-
-    await expect(
-      service.execute({
-        barberId: '60c72b2f9b1d8b2b3c4d5e6f',
-        dayOfWeek: 1,
-        startTime: '08:00',
-        endTime: '18:00',
-      })
-    ).rejects.toThrow('Barbeiro não encontrado.');
+    expect(prisma.workingHours.upsert).not.toHaveBeenCalled();
   });
 });

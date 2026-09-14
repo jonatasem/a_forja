@@ -18,7 +18,9 @@ export class CreateServiceService {
     const serviceExists = await prisma.service.findFirst({
       where: {
         name: {
+          //deve ser exatamente igual à variável name
           equals: name,
+          // ignora a diferença entre maiúsculas e minúsculas ao comparar a string.
           mode: "insensitive",
         },
       },
