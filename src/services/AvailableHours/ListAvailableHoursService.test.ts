@@ -52,7 +52,7 @@ describe("ListAvailableHoursService", () => {
       active: true,
     });
 
-    const appointmentDate = new Date(2099, 11, 31, 8, 30);
+    const appointmentDate = new Date(Date.UTC(2099, 11, 31, 8, 30));
     (prisma.appointment.findMany as jest.Mock).mockResolvedValue([
       {
         date: appointmentDate,
