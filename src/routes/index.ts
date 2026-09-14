@@ -15,6 +15,7 @@ import { CancelAppointmentController } from "../controllers/Appointments/CancelA
 import { ListAvailableHoursController } from "../controllers/AvailableHours/ListAvailableHoursController.js";
 import { GetBarberController } from "../controllers/Barber/GetBarberController.js";
 import { ListAppointmentsController } from "../controllers/Appointments/ListAppointmentsController.js";
+import { UpdateAppointmentStatusController } from "../controllers/Appointments/UpdateAppointmentStatusController.js";
 
 export async function routes(fastify: FastifyInstance) {
 
@@ -90,6 +91,16 @@ export async function routes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const cancelAppointmentController = new CancelAppointmentController();
       return cancelAppointmentController.handle(request, reply);
+    }
+  );
+
+  // Atualiza o status do agendamento (concluído, cancelado/no-show, confirmado)
+  fastify.patch(
+    "/appointments/status",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const updateAppointmentStatusController = new UpdateAppointmentStatusController();
+      return updateAppointmentStatusController.handle(request, reply);
     }
   );
 
