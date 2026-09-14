@@ -1,6 +1,6 @@
 import { prisma } from "../../prisma/index.js";
 
-export interface CreateAppointmentProps {
+export interface CreateAppointmentDTO {
   clientId: string;
   barberId: string;
   serviceId: string;
@@ -13,7 +13,7 @@ function timeToMinutes(time: string): number {
 }
 
 export class CreateAppointmentService {
-  async execute({ clientId, barberId, serviceId, date }: CreateAppointmentProps) {
+  async execute({ clientId, barberId, serviceId, date }: CreateAppointmentDTO) {
     const appointmentDate = new Date(date);
 
     if (isNaN(appointmentDate.getTime())) {
