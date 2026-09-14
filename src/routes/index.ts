@@ -14,6 +14,7 @@ import { CreateAppointmentController } from "../controllers/Appointments/CreateA
 import { CancelAppointmentController } from "../controllers/Appointments/CancelAppointmentController.js";
 import { ListAvailableHoursController } from "../controllers/AvailableHours/ListAvailableHoursController.js";
 import { GetBarberController } from "../controllers/Barber/GetBarberController.js";
+import { ListAppointmentsController } from "../controllers/Appointments/ListAppointmentsController.js";
 
 export async function routes(fastify: FastifyInstance) {
 
@@ -102,6 +103,16 @@ export async function routes(fastify: FastifyInstance) {
     }
   );
 
+  // Busca os agendamentos
+  fastify.get(
+    "/appointments",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const listAppointmentsController = new ListAppointmentsController();
+      return listAppointmentsController.handle(request, reply);
+    }
+  );
+
   // Busca os Barbeiros Ativos
   fastify.get(
     "/barbers",
@@ -111,4 +122,6 @@ export async function routes(fastify: FastifyInstance) {
       return getBarberController.handle(request, reply);
     }
   );
+
+
 }
