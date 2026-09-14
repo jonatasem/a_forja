@@ -92,7 +92,7 @@ export class CreateAppointmentService {
         barberId,
         serviceId,
         date: appointmentDate,
-        status: "CONFIRMED",
+        status: "PENDING",
       },
       include: {
         service: true,
