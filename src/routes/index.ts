@@ -11,7 +11,8 @@ import { CreateServiceController } from "../controllers/Service/CreateServiceCon
 import { ListServiceController } from "../controllers/Service/ListServiceController.js";
 import { SetWorkingHoursController } from "../controllers/WorkingHours/SetWorkingHoursController.js";
 import { CreateAppointmentController } from "../controllers/Appointments/CreateAppointmentController.js";
-import { ListAvailableHoursController } from "../controllers/Appointments/ListAvailableHoursController.js";
+import { CancelAppointmentController } from "../controllers/Appointments/CancelAppointmentController.js";
+import { ListAvailableHoursController } from "../controllers/AvailableHours/ListAvailableHoursController.js";
 import { GetBarberController } from "../controllers/Barber/GetBarberController.js";
 
 export async function routes(fastify: FastifyInstance) {
@@ -58,7 +59,7 @@ export async function routes(fastify: FastifyInstance) {
       const listServiceController = new ListServiceController();
       return listServiceController.handle(request, reply);
     }
-  )
+  );
 
   fastify.post(
     "/working-hours",
@@ -67,11 +68,11 @@ export async function routes(fastify: FastifyInstance) {
       const setWorkingHoursController = new SetWorkingHoursController();
       return setWorkingHoursController.handle(request, reply);
     }
-  )
+  );
 
   // AGENDAMENTOS
 
-  // cria um novo agendamento
+  // Cria um novo agendamento
   fastify.post(
     "/appointments",
     { onRequest: [authenticate] },
@@ -79,9 +80,19 @@ export async function routes(fastify: FastifyInstance) {
       const createAppointmentController = new CreateAppointmentController();
       return createAppointmentController.handle(request, reply);
     }
-  )
+  );
 
-  // busca os horarios disponiveis do barbeiro
+  // Cancela um agendamento
+  fastify.patch(
+    "/appointments/cancel",
+    { onRequest: [authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const cancelAppointmentController = new CancelAppointmentController();
+      return cancelAppointmentController.handle(request, reply);
+    }
+  );
+
+  // Busca os horários disponíveis do barbeiro
   fastify.get(
     "/appointments/available",
     { onRequest: [authenticate] },
@@ -89,7 +100,7 @@ export async function routes(fastify: FastifyInstance) {
       const listAvailableHoursController = new ListAvailableHoursController();
       return listAvailableHoursController.handle(request, reply);
     }
-  )
+  );
 
   // Busca os Barbeiros Ativos
   fastify.get(
@@ -99,9 +110,5 @@ export async function routes(fastify: FastifyInstance) {
       const getBarberController = new GetBarberController();
       return getBarberController.handle(request, reply);
     }
-  )
-
-
-
+  );
 }
-

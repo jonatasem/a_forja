@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import { ListAvailableHoursService } from "../../services/Appointments/ListAvailableHoursService.js";
+import { ListAvailableHoursService } from "../../services/AvailableHours/ListAvailableHoursService.js";
 
 export const listAvailableHoursQuerySchema = z.object({
   barberId: z.string().min(1, { message: "O ID do barbeiro é obrigatório." }),
