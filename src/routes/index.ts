@@ -16,6 +16,8 @@ import { ListAvailableHoursController } from "../controllers/AvailableHours/List
 import { GetBarberController } from "../controllers/Barber/GetBarberController.js";
 import { ListAppointmentsController } from "../controllers/Appointments/ListAppointmentsController.js";
 import { UpdateAppointmentStatusController } from "../controllers/Appointments/UpdateAppointmentStatusController.js";
+import { ForgotPasswordController } from "../controllers/PasswordReset/ForgotPasswordController.js";
+import { ResetPasswordController } from "../controllers/PasswordReset/ResetePasswordController.js";
 
 export async function routes(fastify: FastifyInstance) {
 
@@ -36,6 +38,24 @@ export async function routes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const loginUserController = new LoginUserController();
       return loginUserController.handle(request, reply);
+    }
+  );
+
+  // Solicitar recuperação de senha (envia e-mail/gera token)
+  fastify.post(
+    "/forgot-password",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const forgotPasswordController = new ForgotPasswordController();
+      return forgotPasswordController.handle(request, reply);
+    }
+  );
+
+  // Redefinir senha com token
+  fastify.post(
+    "/reset-password",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const resetPasswordController = new ResetPasswordController();
+      return resetPasswordController.handle(request, reply);
     }
   );
 
