@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const urlApi = import.meta.env.VITE_API_URL;
+
 // Cria a instância do Axios apontando para o backend
 export const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: urlApi,
 });
 
 // Interceptador: roda antes de QUALQUER requisição sair do navegador
