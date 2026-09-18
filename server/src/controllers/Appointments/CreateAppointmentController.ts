@@ -4,7 +4,9 @@ import { CreateAppointmentService } from "../../services/Appointments/CreateAppo
 
 export const createAppointmentSchema = z.object({
   barberId: z.string().min(1, { message: "O ID do barbeiro é obrigatório." }),
-  serviceId: z.string().min(1, { message: "O ID do serviço é obrigatório." }),
+  serviceIds: z
+    .array(z.string().min(1))
+    .min(1, { message: "Selecione pelo menos um serviço." }),
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Formato de data inválido.",
   }),
@@ -25,14 +27,14 @@ export class CreateAppointmentController {
       return reply.status(400).send({ error: "Dados inválidos.", details: fieldErrors });
     }
 
-    const { barberId, serviceId, date } = result.data;
+    const { barberId, serviceIds, date } = result.data;
 
     try {
       const createAppointmentService = new CreateAppointmentService();
       const appointment = await createAppointmentService.execute({
         clientId,
         barberId,
-        serviceId,
+        serviceIds,
         date,
       });
 

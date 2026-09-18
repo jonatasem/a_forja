@@ -2,9 +2,9 @@ import { prisma } from "../../prisma/index.js";
 
 export interface ListAvailableHoursDTO {
   barberId: string;
-  serviceId: string;
+  serviceIds: string[];
   date: string; // Formato: "YYYY-MM-DD"
-  slotStep?: number; // Intervalo entre horários em minutos (padrão: 30)
+  slotStep?: number; // Padrão: 30 minutos
 }
 
 interface OccupiedInterval {
@@ -24,16 +24,26 @@ function minutesToTime(totalMinutes: number): string {
 }
 
 export class ListAvailableHoursService {
-  async execute({ barberId, serviceId, date, slotStep = 30 }: ListAvailableHoursDTO) {
+  async execute({ barberId, serviceIds, date, slotStep = 30 }: ListAvailableHoursDTO) {
     const barber = await prisma.user.findUnique({ where: { id: barberId } });
     if (!barber || barber.role !== "barber") {
       throw new Error("Barbeiro não encontrado.");
     }
 
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
-    if (!service || !service.active) {
-      throw new Error("Serviço inativo ou inexistente.");
+    // Busca todos os serviços solicitados
+    const services = await prisma.service.findMany({
+      where: {
+        id: { in: serviceIds },
+        active: true,
+      },
+    });
+
+    if (services.length !== serviceIds.length) {
+      throw new Error("Um ou mais serviços selecionados estão inativos ou não existem.");
     }
+
+    // SOMA TOTAL DA DURAÇÃO DOS SERVIÇOS
+    const totalDuration = services.reduce((acc, service) => acc + service.duration, 0);
 
     const [yearStr, monthStr, dayStr] = date.split("-");
     if (!yearStr || !monthStr || !dayStr) {
@@ -44,8 +54,8 @@ export class ListAvailableHoursService {
     const month = Number(monthStr);
     const day = Number(dayStr);
 
-    const searchDate = new Date(Date.UTC(year, month - 1, day));
-    const dayOfWeek = searchDate.getUTCDay();
+    const searchDate = new Date(year, month - 1, day);
+    const dayOfWeek = searchDate.getDay();
 
     const workingHour = await prisma.workingHours.findFirst({
       where: { barberId, dayOfWeek, active: true },
@@ -58,10 +68,10 @@ export class ListAvailableHoursService {
     const breakStartMinutes = workingHour.breakStart ? timeToMinutes(workingHour.breakStart) : null;
     const breakEndMinutes = workingHour.breakEnd ? timeToMinutes(workingHour.breakEnd) : null;
 
-    const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-    const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
-    // 1. Busca os agendamentos existentes
+    // 1. Busca agendamentos (Ajustado para relacionamentos N:N `services`)
     const existingAppointments = await prisma.appointment.findMany({
       where: {
         barberId,
@@ -70,11 +80,11 @@ export class ListAvailableHoursService {
       },
       select: {
         date: true,
-        service: { select: { duration: true } },
+        services: { select: { duration: true } },
       },
     });
 
-    // 2. Busca os bloqueios de agenda (ScheduleBlock)
+    // 2. Busca bloqueios na agenda
     const scheduleBlocks = await prisma.scheduleBlock.findMany({
       where: {
         barberId,
@@ -85,44 +95,55 @@ export class ListAvailableHoursService {
 
     const occupiedIntervals: OccupiedInterval[] = [];
 
-    // Adiciona intervalos ocupados pelos agendamentos
+    // Mapeia agendamentos somando a duração dos seus serviços
     existingAppointments.forEach((app) => {
       const appDate = new Date(app.date);
-      const start = appDate.getUTCHours() * 60 + appDate.getUTCMinutes();
-      const end = start + app.service.duration;
+      const start = appDate.getHours() * 60 + appDate.getMinutes();
+      const appTotalDuration = app.services.reduce((acc, s) => acc + s.duration, 0);
+      const end = start + appTotalDuration;
       occupiedIntervals.push({ start, end });
     });
 
-    // Adiciona intervalos ocupados pelos bloqueios
+    // Mapeia bloqueios
     scheduleBlocks.forEach((block) => {
       const blockStart = new Date(block.startTime);
       const blockEnd = new Date(block.endTime);
-      const start = blockStart.getUTCHours() * 60 + blockStart.getUTCMinutes();
-      const end = blockEnd.getUTCHours() * 60 + blockEnd.getUTCMinutes();
+      const start = blockStart.getHours() * 60 + blockStart.getMinutes();
+      const end = blockEnd.getHours() * 60 + blockEnd.getMinutes();
       occupiedIntervals.push({ start, end });
     });
 
     const now = new Date();
-    const isToday = searchDate.toISOString().slice(0, 10) === now.toISOString().slice(0, 10);
-    const currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+    const isToday =
+      searchDate.getFullYear() === now.getFullYear() &&
+      searchDate.getMonth() === now.getMonth() &&
+      searchDate.getDate() === now.getDate();
 
-    const serviceDuration = service.duration;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const availableHours: string[] = [];
 
-    for (let current = workStartMinutes; current + serviceDuration <= workEndMinutes; current += slotStep) {
+    // Percorre os horários verificando a janela total de tempo necessária
+    for (
+      let current = workStartMinutes;
+      current + totalDuration <= workEndMinutes;
+      current += slotStep
+    ) {
       const slotStart = current;
-      const slotEnd = current + serviceDuration;
+      const slotEnd = current + totalDuration;
 
+      // Ignora horários passados do dia atual
       if (isToday && slotStart <= currentMinutes) {
         continue;
       }
 
+      // Valida interseção com pausa/almoço do barbeiro
       if (breakStartMinutes !== null && breakEndMinutes !== null) {
         if (slotStart < breakEndMinutes && slotEnd > breakStartMinutes) {
           continue;
         }
       }
 
+      // Valida conflitos com agendamentos existentes ou bloqueios
       const hasConflict = occupiedIntervals.some(
         (interval) => slotStart < interval.end && slotEnd > interval.start
       );

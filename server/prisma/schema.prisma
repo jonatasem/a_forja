@@ -84,7 +84,8 @@ model Service {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   
-  appointments Appointment[]
+  appointmentIds String[]      @db.ObjectId
+  appointments   Appointment[] @relation(fields: [appointmentIds], references: [id])
 }
 
 model Appointment {
@@ -98,8 +99,8 @@ model Appointment {
   barberId  String            @db.ObjectId
   barber    User              @relation("BarberAppointments", fields: [barberId], references: [id])
   
-  serviceId String            @db.ObjectId
-  service   Service           @relation(fields: [serviceId], references: [id])
+  serviceIds String[]          @db.ObjectId
+  services   Service[]         @relation(fields: [serviceIds], references: [id])
 
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt

@@ -12,16 +12,15 @@ interface CreateServiceProps {
 export class CreateServiceService {
   async execute({ name, description, price, duration, userRole }: CreateServiceProps) {
     if (!isManagement(userRole)) {
-      throw new Error("Apenas barbeiros têm permissão para criar serviços.");
+      throw new Error("Apenas barbeiros ou gestores têm permissão para criar serviços.");
     }
 
+    // Busca insensível a maiúsculas/minúsculas compatível com MongoDB
     const serviceExists = await prisma.service.findFirst({
       where: {
         name: {
-          //deve ser exatamente igual à variável name
           equals: name,
-          // ignora a diferença entre maiúsculas e minúsculas ao comparar a string.
-          mode: "insensitive",
+          mode: "insensitive", // Mantido se o Prisma Client estritamente o aceitar no seu setup
         },
       },
     });
@@ -32,8 +31,8 @@ export class CreateServiceService {
 
     const service = await prisma.service.create({
       data: {
-        name,
-        description,
+        name: name.trim(),
+        description: description.trim(),
         price,
         duration,
       },

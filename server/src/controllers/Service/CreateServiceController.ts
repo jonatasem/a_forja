@@ -2,24 +2,26 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { CreateServiceService } from '../../services/Service/CreateServiceService.js';
 
-// Define o esquema
 export const createServiceSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   description: z.string().min(1, { message: 'A descrição é obrigatória.' }),
   price: z.number().positive({ message: 'O preço deve ser um valor positivo.' }),
-  duration: z.number().int().positive({ message: 'A duração deve ser um valor positivo em minutos.' }),
+  duration: z
+    .number()
+    .int()
+    .min(5, { message: 'A duração deve ser de no mínimo 5 minutos.' }),
 });
 
 export type CreateServiceProps = z.infer<typeof createServiceSchema>;
-    
+
 export class CreateServiceController {
   async handle(request: FastifyRequest, reply: FastifyReply) {
     const userRole = request.user?.role;
 
     if (!userRole) {
       return reply
-      .status(401)
-      .send({ error: "Sessão inválida ou usuário não autenticado." });
+        .status(401)
+        .send({ error: "Sessão inválida ou usuário não autenticado." });
     }
 
     const result = createServiceSchema.safeParse(request.body);
@@ -36,7 +38,6 @@ export class CreateServiceController {
     const { name, description, price, duration } = result.data;
 
     try {
-      // Instancia a classe
       const createServiceService = new CreateServiceService();
 
       const service = await createServiceService.execute({

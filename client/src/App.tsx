@@ -1,9 +1,9 @@
-import { LoginPage } from "./pages/LoginPage"
+import RoutesMain from "./routes";
 
 export default function App() {
   return (
     <>
-      <LoginPage />
-    </>  
-  )
+      <RoutesMain />
+    </>
+  );
 }
