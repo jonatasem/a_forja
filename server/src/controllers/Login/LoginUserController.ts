@@ -1,8 +1,7 @@
-import type { FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 import { LoginUserService } from '../../services/Login/LoginUserService.js';
 
-// Define o esquema
 export const loginSchema = z.object({
   phone: z.string().min(1, { message: 'O telefone é obrigatório.' }),
   password: z.string().min(6, { message: 'A senha deve ter pelo menos 6 caracteres.' }),
@@ -26,9 +25,7 @@ export class LoginUserController {
     const { phone, password } = result.data;
 
     try {
-      // Instancia a classe
       const loginUserService = new LoginUserService();
-      
       const dataLoginUserService = await loginUserService.execute({ phone, password });
 
       return reply.status(200).send({...dataLoginUserService});

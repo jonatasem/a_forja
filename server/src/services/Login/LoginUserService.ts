@@ -28,8 +28,9 @@ export class LoginUserService {
     }
 
     const secret = process.env.JWT_SECRET;
+
     if (!secret) {
-      throw new Error("Chave secreta do JWT não definida.");
+      throw new Error("Chave secreta do JWT não foi definida.");
     }
 
     // Gera o token JWT assinado com a chave secreta
