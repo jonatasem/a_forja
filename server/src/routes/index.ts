@@ -9,7 +9,7 @@ import { CreateUserController } from "../controllers/User/CreateUserController.j
 import { LoginUserController } from "../controllers/Login/LoginUserController.js";
 import { CreateServiceController } from "../controllers/Service/CreateServiceController.js";
 import { ListServiceController } from "../controllers/Service/ListServiceController.js";
-import { SetWorkingHoursController } from "../controllers/WorkingHours/SetWorkingHoursController.js";
+import { SetWorkingHoursController } from "../controllers/WorkLoad/CreateWorkLoadController.js";
 import { CreateAppointmentController } from "../controllers/Appointments/CreateAppointmentController.js";
 import { CancelAppointmentController } from "../controllers/Appointments/CancelAppointmentController.js";
 import { ListAvailableHoursController } from "../controllers/AvailableHours/ListAvailableHoursController.js";
