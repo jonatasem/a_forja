@@ -18,7 +18,7 @@ export class CreateUserService {
     // Criptografa a senha
     const passwordCrypted = await bcrypt.hash(password, 10);
 
-    // O Prisma atribui 'client' automaticamente através do @default(client)
+    // O Prisma atribui 'CLIENT' automaticamente através do @default(CLIENT)
     const user = await prisma.user.create({
       data: {
         name,
