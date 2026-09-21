@@ -1,5 +1,6 @@
 import { prisma } from "../../prisma/index.js";
 
+// Lista os serviços ativos
 export class ListServiceService {
   async execute() {
     const result = await prisma.service.findMany({
