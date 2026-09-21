@@ -8,37 +8,39 @@ datasource db {
 }
 
 enum Role {
-  client
-  barber
-  admin
+  CLIENT
+  BARBER
+  ADMIN
 }
 
 enum Status {
-  ativo
-  inativo
+  ACTIVE
+  INACTIVE
 }
 
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  role      Role     @default(client)
-  status    Status   @default(ativo)
+  role      Role     @default(CLIENT) // padrao cliente
+  status    Status   @default(ACTIVE) // padrao ativo
   name      String
-  phone     String   @unique
-  email     String   @unique
+  phone     String   @unique // unicos
+  email     String   @unique // unicos
   password  String
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   passwordResets     PasswordReset[]
   clientAppointments Appointment[]    @relation("ClientAppointments")
   barberAppointments Appointment[]    @relation("BarberAppointments")
-  workingHours       WorkingHours[]
+  workLoad       WorkLoad[]
   scheduleBlocks     ScheduleBlock[]
 }
 
 model ScheduleBlock {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   barberId  String   @db.ObjectId
+  // (Exclusao em cascata)
   barber    User     @relation(fields: [barberId], references: [id], onDelete: Cascade)
   startTime DateTime
   endTime   DateTime
@@ -52,28 +54,38 @@ model ScheduleBlock {
 model PasswordReset {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   token     String   @unique
+
   userId    String   @db.ObjectId
+  // Ao deletar usuario, ele apaga o seu historico de PassswordReset (Exclusao em cascata)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
 
-model WorkingHours {
+// // Modelo de Carga Horaria
+model WorkLoad  {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   barberId   String   @db.ObjectId
+  // (Exclusao em cascata)
   barber     User     @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
   dayOfWeek  Int      // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
+
   startTime  String   // Formato "08:00"
   endTime    String   // Formato "18:00"
   breakStart String?  // Formato "12:00"
   breakEnd   String?  // Formato "13:00"
+
   active     Boolean  @default(true)
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@unique([barberId, dayOfWeek])
 }
 
+// Modelo de serviços
 model Service {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
   name        String
@@ -88,19 +100,20 @@ model Service {
   appointments   Appointment[] @relation(fields: [appointmentIds], references: [id])
 }
 
+// Modelo de Agendamentos
 model Appointment {
   id        String            @id @default(auto()) @map("_id") @db.ObjectId
   date      DateTime
   status    AppointmentStatus @default(PENDING)
-  
+
   clientId  String            @db.ObjectId
   client    User              @relation("ClientAppointments", fields: [clientId], references: [id])
   
   barberId  String            @db.ObjectId
   barber    User              @relation("BarberAppointments", fields: [barberId], references: [id])
   
-  serviceIds String[]          @db.ObjectId
-  services   Service[]         @relation(fields: [serviceIds], references: [id])
+  serviceIds String[]         @db.ObjectId
+  services   Service[]        @relation(fields: [serviceIds], references: [id])
 
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
@@ -110,6 +123,7 @@ model Appointment {
   @@index([status, date])
 }
 
+// Status dos Agendamentos
 enum AppointmentStatus {
   PENDING
   CONFIRMED
