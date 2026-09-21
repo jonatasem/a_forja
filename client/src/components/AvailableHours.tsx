@@ -8,7 +8,7 @@ interface AvailableHoursProps {
 
 export function AvailableHours({ barberId, serviceId }: AvailableHoursProps) {
 
-  const { date, hours, loading, handleSearch } = useAvailableHours(barberId, serviceId);
+  const { date, hours, loading, handleSearch } = useAvailableHours(barberId, [serviceId]);
 
   return (
     <div className="rounded-2xl bg-[#121215] border border-amber-500/20 p-6 shadow-lg">
