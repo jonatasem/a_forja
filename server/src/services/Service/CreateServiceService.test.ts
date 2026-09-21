@@ -21,7 +21,7 @@ describe("CreateServiceService", () => {
   };
 
   it("deve criar um novo serviço com sucesso", async () => {
-    // ARRANGE: Simula que o serviço NÃO existe no banco (retorna null)
+    // Simula que o serviço NÃO existe no banco (retorna null)
     jest.spyOn(prisma.service, "findFirst").mockResolvedValue(null as any);
 
     const mockCreatedService = {
@@ -63,17 +63,17 @@ describe("CreateServiceService", () => {
   });
 
   it("deve lançar um erro se o usuário não tiver permissão de gerenciamento", async () => {
-    // ACT & ASSERT: Tenta criar serviço com uma role sem permissão
+    // Tenta criar serviço com uma role sem permissão
     await expect(
       createServiceService.execute({
         ...mockServiceData,
         userRole: "CLIENT",
       })
-    ).rejects.toThrow("Apenas barbeiros têm permissão para criar serviços.");
+    ).rejects.toThrow("Apenas barbeiros ou gestores têm permissão para criar serviços.");
   });
 
   it("deve lançar um erro se já existir um serviço cadastrado com o mesmo nome", async () => {
-    // ARRANGE: Simula que o banco ENCONTROU um serviço com o mesmo nome
+    // Simula que o banco ENCONTROU um serviço com o mesmo nome
     jest.spyOn(prisma.service, "findFirst").mockResolvedValue({
       id: "existing-id",
       name: "Corte de Cabelo",
@@ -81,7 +81,7 @@ describe("CreateServiceService", () => {
 
     const spyCreate = jest.spyOn(prisma.service, "create");
 
-    // ACT & ASSERT: Executa esperando a exceção e garante que a mensagem está correta
+    // Executa esperando a exceção e garante que a mensagem está correta
     await expect(
       createServiceService.execute(mockServiceData)
     ).rejects.toThrow("Já existe um serviço cadastrado com este nome.");

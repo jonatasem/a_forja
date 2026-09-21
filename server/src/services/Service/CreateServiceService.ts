@@ -15,12 +15,14 @@ export class CreateServiceService {
       throw new Error("Apenas barbeiros ou gestores têm permissão para criar serviços.");
     }
 
+    const cleanName = name.trim();
+
     // Busca insensível a maiúsculas/minúsculas compatível com MongoDB
     const serviceExists = await prisma.service.findFirst({
       where: {
         name: {
-          equals: name,
-          mode: "insensitive", // Mantido se o Prisma Client estritamente o aceitar no seu setup
+          equals: cleanName,
+          mode: "insensitive",
         },
       },
     });
@@ -31,8 +33,8 @@ export class CreateServiceService {
 
     const service = await prisma.service.create({
       data: {
-        name: name.trim(),
-        description: description.trim(),
+        name: cleanName,
+        description,
         price,
         duration,
       },
