@@ -1,15 +1,21 @@
 import { buildApp } from "./app.js";
 
+const port = process.env.PORT;
+
+// Se a variável de ambiente PORT não estiver definida
+if (!port) {
+  throw new Error("Informe uma porta para o backend.");
+}
+
 // Função assíncrona responsável por iniciar o servidor Fastify.
 const start = async () => {
   try {
     const app = await buildApp();
-    const port = process.env.PORT;
 
     // Escuta o servidor
     await app.listen({
       port: Number(port),
-      host: "0.0.0.0",
+      host: "0.0.0.0", // Permite qualquer ip acessar
     });
 
     // Iniciado com sucesso

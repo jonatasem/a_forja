@@ -2,15 +2,14 @@ import { buildApp } from "./app.js";
 import type { FastifyInstance } from "fastify";
 
 describe("Inicialização da aplicação e rotas", () => {
-  // Simula a instancia app do Fastify para ser usada nos testes, garantindo que cada teste tenha um ambiente limpo e padronizado.
+  // Simula a instancia app do Fastify
   let app: FastifyInstance;
   // Simula as variaveis de ambiente originais para restaurá-las após os testes, garantindo que os testes não afetem o ambiente global.
   const originalEnv = process.env;
 
-  // Garante que as variáveis de ambiente necessárias para os testes estejam definidas ANTES (BEFORE) de cada teste, garantindo que a aplicação seja inicializada corretamente.
+  // Garante que as variáveis de ambiente necessárias para os testes estejam definidas ANTES (BEFORE ALL) de cada teste, garantindo que a aplicação seja inicializada corretamente.
   beforeAll(async () => {
     process.env.URL_DEVELOP = "http://localhost:5173";
-    process.env.PORT = "3333";
 
     app = await buildApp();
     await app.ready();
@@ -22,11 +21,10 @@ describe("Inicialização da aplicação e rotas", () => {
     process.env = originalEnv;
   });
 
-  // Garante que as variáveis de ambiente necessárias para os testes estejam definidas ANTES (BEFORE) de cada teste, garantindo que a aplicação seja inicializada corretamente.
+  // Garante que as variáveis de ambiente necessárias para os testes estejam definidas ANTES (BEFORE EACH) de cada teste, garantindo que a aplicação seja inicializada corretamente.
   beforeEach(() => {
     // Garante ambiente limpo e padronizado antes de cada teste
     process.env.URL_DEVELOP = "http://localhost:5173";
-    process.env.PORT = "3333";
   });
 
   // Deve lançar erro se a variável de ambiente URL_DEVELOP não estiver informada
@@ -34,14 +32,6 @@ describe("Inicialização da aplicação e rotas", () => {
     delete process.env.URL_DEVELOP;
 
     // Espera que a função buildApp lance um erro com a mensagem "Informe a url do frontend."
-    await expect(buildApp()).rejects.toThrow("Informe a url do frontend.");
-  });
-
-  // Deve lançar erro se a variável de ambiente PORT não estiver informada
-  it("deve lançar erro se a PORT não estiver informada", async () => {
-    delete process.env.PORT;
-
-    // Espera que a função buildApp lance um erro com a mensagem "Informe uma porta para o backend."
-    await expect(buildApp()).rejects.toThrow("Informe uma porta para o backend.");
+    await expect(buildApp()).rejects.toThrow("Informe a URL_DEVELOP do frontend.");
   });
 });
