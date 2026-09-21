@@ -8,7 +8,7 @@ describe("LoginUserService", () => {
   let loginUserService: LoginUserService;
 
   beforeEach(() => {
-    // Restaura o comportamento original dos objetos para evitar contaminação entre testes
+    // retorna default no fim de cada teste
     jest.restoreAllMocks();
     loginUserService = new LoginUserService();
   });
@@ -20,7 +20,7 @@ describe("LoginUserService", () => {
       phone: "11999999999",
       email: "joao@email.com",
       password: "hashed_password",
-      role: "client",
+      role: "CLIENT",
     };
 
     // Simula a busca do usuário retornando os dados fictícios
@@ -42,7 +42,9 @@ describe("LoginUserService", () => {
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
       where: { phone: "11999999999" },
     });
+
     expect(bcrypt.compare).toHaveBeenCalledWith("password123", "hashed_password");
+
     expect(result).toEqual({
       user: {
         id: mockUser.id,
