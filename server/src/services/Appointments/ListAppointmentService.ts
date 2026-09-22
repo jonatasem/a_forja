@@ -1,6 +1,6 @@
 import { prisma } from "../../prisma/index.js";
 
-export interface ListAppointmentsDTO {
+export interface ListAppointmentServiceProps {
   userId: string;
   userRole?: string | undefined;
   status?: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELED" | undefined;
@@ -9,7 +9,7 @@ export interface ListAppointmentsDTO {
   clientId?: string | undefined;
 }
 
-export class ListAppointmentsService {
+export class ListAppointmentService {
   async execute({
     userId,
     userRole,
@@ -17,15 +17,15 @@ export class ListAppointmentsService {
     date,
     barberId,
     clientId,
-  }: ListAppointmentsDTO) {
+  }: ListAppointmentServiceProps) {
     const where: any = {};
 
-    if (userRole === "BARBER") {
-      where.barberId = userId;
-    } else if (userRole === "ADMIN") {
+    // BARBER e ADMIN têm acesso total para filtrar por qualquer barbeiro ou cliente
+    if (userRole === "BARBER" || userRole === "ADMIN") {
       if (barberId) where.barberId = barberId;
       if (clientId) where.clientId = clientId;
     } else {
+      // Cliente comum enxerga unicamente os seus próprios agendamentos
       where.clientId = userId;
     }
 
@@ -54,7 +54,7 @@ export class ListAppointmentsService {
     const appointments = await prisma.appointment.findMany({
       where,
       include: {
-        service: true,
+        services: true,
         client: { select: { id: true, name: true, email: true, phone: true } },
         barber: { select: { id: true, name: true, email: true, phone: true } },
       },

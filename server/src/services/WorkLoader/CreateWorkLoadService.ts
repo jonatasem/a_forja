@@ -6,8 +6,8 @@ export interface CreateWorkLoadProps {
   dayOfWeek: number;
   startTime: string;
   endTime: string;
-  breakStart: string;
-  breakEnd: string;
+  breakStart?: string | null;
+  breakEnd?: string | null;
   userRole: string;
 }
 
@@ -47,15 +47,15 @@ export class CreateWorkLoadService {
       throw new Error("Já existe um horário cadastrado para este dia da semana. Use a opção de atualizar.");
     }
 
-    // Cria o registro de horário
+    // Cria o registro de horário convertendo undefined para null
     const workLoadService = await prisma.workLoad.create({
       data: {
         barberId,
         dayOfWeek,
         startTime,
         endTime,
-        breakStart,
-        breakEnd,
+        breakStart: breakStart ?? null,
+        breakEnd: breakEnd ?? null,
       },
     });
 

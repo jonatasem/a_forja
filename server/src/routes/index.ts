@@ -12,12 +12,12 @@ import { ListServiceController } from "../controllers/Service/ListServiceControl
 import { CreateWorkLoadController } from "../controllers/WorkLoad/CreateWorkLoadController.js";
 import { CreateAppointmentController } from "../controllers/Appointments/CreateAppointmentController.js";
 import { CancelAppointmentController } from "../controllers/Appointments/CancelAppointmentController.js";
-import { ListAvailableHoursController } from "../controllers/AvailableHours/ListAvailableHoursController.js";
+import { ListWorkLoadController } from "../controllers/WorkLoad/ListWorkLoadController.js";
 import { ListBarberController } from "../controllers/Barber/ListBarberController.js";
-import { ListAppointmentsController } from "../controllers/Appointments/ListAppointmentsController.js";
+import { ListAppointmentController } from "../controllers/Appointments/ListAppointmentController.js";
 import { UpdateAppointmentStatusController } from "../controllers/Appointments/UpdateAppointmentStatusController.js";
 import { ForgotPasswordController } from "../controllers/PasswordReset/ForgotPasswordController.js";
-import { ResetPasswordController } from "../controllers/PasswordReset/ResetePasswordController.js";
+import { ResetPasswordController } from "../controllers/PasswordReset/ResetPasswordController.js";
 import { CreateTimeOffController } from "../controllers/TimeOff/TimeOffController.js";
 
 export async function routes(fastify: FastifyInstance) {
@@ -97,7 +97,7 @@ export async function routes(fastify: FastifyInstance) {
 
   // Cria um novo agendamento
   fastify.post(
-    "/appointments",
+    "/appointment",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const createAppointmentController = new CreateAppointmentController();
@@ -107,7 +107,7 @@ export async function routes(fastify: FastifyInstance) {
 
   // Cancela um agendamento
   fastify.patch(
-    "/appointments/cancel",
+    "/appointment/cancel",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const cancelAppointmentController = new CancelAppointmentController();
@@ -117,7 +117,7 @@ export async function routes(fastify: FastifyInstance) {
 
   // Atualiza o status do agendamento (concluído, cancelado/no-show, confirmado)
   fastify.patch(
-    "/appointments/status",
+    "/appointment/status",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const updateAppointmentStatusController = new UpdateAppointmentStatusController();
@@ -127,11 +127,11 @@ export async function routes(fastify: FastifyInstance) {
 
   // Busca os horários disponíveis do barbeiro
   fastify.get(
-    "/appointments/available",
+    "/work-load",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const listAvailableHoursController = new ListAvailableHoursController();
-      return listAvailableHoursController.handle(request, reply);
+      const listWorkLoadController = new ListWorkLoadController();
+      return listWorkLoadController.handle(request, reply);
     }
   );
 
@@ -140,8 +140,8 @@ export async function routes(fastify: FastifyInstance) {
     "/appointments",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const listAppointmentsController = new ListAppointmentsController();
-      return listAppointmentsController.handle(request, reply);
+      const listAppointmentController = new ListAppointmentController();
+      return listAppointmentController.handle(request, reply);
     }
   );
 

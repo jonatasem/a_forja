@@ -7,6 +7,7 @@ export const createAppointmentSchema = z.object({
   serviceIds: z
     .array(z.string().min(1))
     .min(1, { message: "Selecione pelo menos um serviço." }),
+  // Garante que a data enviada pelo frontend é conversível para Date
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Formato de data inválido.",
   }),
@@ -24,13 +25,18 @@ export class CreateAppointmentController {
 
     if (!result.success) {
       const { fieldErrors } = z.flattenError(result.error);
-      return reply.status(400).send({ error: "Dados inválidos.", details: fieldErrors });
+      return reply.status(400).send({ 
+        error: "Dados inválidos.", 
+        details: fieldErrors 
+      });
     }
 
     const { barberId, serviceIds, date } = result.data;
 
     try {
       const createAppointmentService = new CreateAppointmentService();
+      
+      // Invoca o serviço responsável pela regra de negócio
       const appointment = await createAppointmentService.execute({
         clientId,
         barberId,
@@ -40,8 +46,9 @@ export class CreateAppointmentController {
 
       return reply.status(201).send(appointment);
     } catch (err) {
+      // Retorna a mensagem de erro específica lançada pela regra de negócio (ex: "Horário ocupado")
       return reply.status(400).send({
-        error : "Erro inesperado ao criar agendamento.",
+        error: err instanceof Error ? err.message : "Erro inesperado ao criar agendamento.",
       });
     }
   }

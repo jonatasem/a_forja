@@ -2,10 +2,8 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { CreateWorkLoadService } from "../../services/WorkLoader/CreateWorkLoadService.js";
 
-// Regex para validar formato de horário 24h (00:00 até 23:59)
 const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 
-// Converte string "HH:mm" em minutos totais para facilitar comparações numéricas
 const timeToMinutes = (time: string) => {
   const [hours = 0, minutes = 0] = time.split(":").map(Number);
   return hours * 60 + minutes;
@@ -21,8 +19,9 @@ export const createWorkLoadSchema = z
       .max(6, { message: "O dia da semana deve ser entre 0 (Domingo) e 6 (Sábado)." }),
     startTime: z.string().regex(timeRegex, { message: "Horário inicial inválido. Use o formato HH:mm." }),
     endTime: z.string().regex(timeRegex, { message: "Horário final inválido. Use o formato HH:mm." }),
-    breakStart: z.string().regex(timeRegex, { message: "Horário de início do intervalo inválido." }),
-    breakEnd: z.string().regex(timeRegex, { message: "Horário de fim do intervalo inválido." }),
+    // Tornamos o intervalo opcional / aceitando null
+    breakStart: z.string().regex(timeRegex, { message: "Horário de início do intervalo inválido." }).optional().nullable(),
+    breakEnd: z.string().regex(timeRegex, { message: "Horário de fim do intervalo inválido." }).optional().nullable(),
   })
   // Valida se o término do expediente ocorre após o início
   .refine(
@@ -37,7 +36,9 @@ export const createWorkLoadSchema = z
   // Valida se o intervalo está contido dentro do horário de expediente
   .refine(
     (data) => {
+      // Se não enviou o intervalo, ignora essa validação (está válido)
       if (!data.breakStart || !data.breakEnd) return true;
+
       const start = timeToMinutes(data.startTime);
       const end = timeToMinutes(data.endTime);
       const bStart = timeToMinutes(data.breakStart);
@@ -58,11 +59,8 @@ export class CreateWorkLoadController {
 
     const result = createWorkLoadSchema.safeParse(request.body);
 
-    // Se houver erro de validação nos campos, retorna HTTP 400 com os detalhes
     if (!result.success) {
-
       const { fieldErrors } = z.flattenError(result.error);
-      
       return reply.status(400).send({
         error: "Dados de horário inválidos.",
         details: fieldErrors,
@@ -72,21 +70,20 @@ export class CreateWorkLoadController {
     try {
       const createWorkLoadService = new CreateWorkLoadService();
 
-      // Executa o serviço repassando todos os dados validados mais o userRole
       const workingHour = await createWorkLoadService.execute({
         ...result.data,
+        // Garante que se for undefined, passe null para o Service/Prisma
+        breakStart: result.data.breakStart ?? null,
+        breakEnd: result.data.breakEnd ?? null,
         userRole,
       });
 
-      // Retorna o horário configurado com sucesso (HTTP 200)
       return reply.status(200).send(workingHour);
     } catch (err) {
-      // Trata erros de regras de negócio lançados pelo Service (HTTP 400)
       if (err instanceof Error) {
         return reply.status(400).send({ error: err.message });
       }
 
-      // Trata erros não esperados do servidor (HTTP 500)
       return reply.status(500).send({ error: "Erro interno no servidor." });
     }
   }
