@@ -15,7 +15,7 @@ const start = async () => {
     // Escuta o servidor
     await app.listen({
       port: Number(port),
-      host: "0.0.0.0", // Permite qualquer ip acessar
+      host: "0.0.0.0", // Para desenvolvimento
     });
 
     // Iniciado com sucesso

@@ -10,4 +10,5 @@ module.exports = {
     "/node_modules/",
     "/dist/"
   ],
-};
+  silent: true,
+};   

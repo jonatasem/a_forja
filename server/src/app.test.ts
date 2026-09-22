@@ -1,6 +1,8 @@
 import { buildApp } from "./app.js";
 import type { FastifyInstance } from "fastify";
 
+// dotenv.config({ quiet: true });
+
 describe("Inicialização da aplicação e rotas", () => {
   // Simula a instancia app do Fastify
   let app: FastifyInstance;

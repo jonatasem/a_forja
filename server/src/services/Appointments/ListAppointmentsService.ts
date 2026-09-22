@@ -20,9 +20,9 @@ export class ListAppointmentsService {
   }: ListAppointmentsDTO) {
     const where: any = {};
 
-    if (userRole === "barber") {
+    if (userRole === "BARBER") {
       where.barberId = userId;
-    } else if (userRole === "admin") {
+    } else if (userRole === "ADMIN") {
       if (barberId) where.barberId = barberId;
       if (clientId) where.clientId = clientId;
     } else {

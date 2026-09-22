@@ -22,7 +22,7 @@ export class CancelAppointmentService {
 
     const isClientOwner = appointment.clientId === userId;
     const isBarberOwner = appointment.barberId === userId;
-    const isAdmin = userRole === "barber";
+    const isAdmin = userRole === "BARBER";
 
     if (!isClientOwner && !isBarberOwner && !isAdmin) {
       throw new Error("Você não tem permissão para cancelar este agendamento.");

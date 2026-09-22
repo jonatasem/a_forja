@@ -35,7 +35,7 @@ export class CancelAppointmentController {
       return reply.status(200).send(appointment);
     } catch (err) {
       return reply.status(400).send({
-        error: err instanceof Error ? err.message : "Erro inesperado ao cancelar agendamento.",
+        error : "Erro inesperado ao cancelar agendamento.",
       });
     }
   }
