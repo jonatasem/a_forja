@@ -39,7 +39,7 @@ export class UpdateAppointmentStatusController {
       return reply.status(200).send(appointment);
     } catch (err) {
       return reply.status(400).send({
-        error: err instanceof Error ? err.message : "Erro inesperado ao atualizar status do agendamento.",
+        error : "Erro inesperado ao atualizar status do agendamento.",
       });
     }
   }

@@ -44,7 +44,7 @@ export class ListAvailableHoursController {
       return reply.status(200).send(availableHours);
     } catch (err) {
       return reply.status(400).send({
-        error: err instanceof Error ? err.message : "Erro inesperado ao listar horários disponíveis.",
+        error : "Erro inesperado ao listar horários disponíveis.",
       });
     }
   }

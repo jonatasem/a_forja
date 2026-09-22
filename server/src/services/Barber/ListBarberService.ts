@@ -1,13 +1,12 @@
 import { prisma } from "../../prisma/index.js";
 
-export class GetBarberService {
+// Retorna todos os barbeiros ativos
+export class ListBarberService {
     async execute() {
         const barbers = await prisma.user.findMany({
             where: {
-                role: "barber",
-                status: {
-                    not: "inativo"
-                }
+                role: "BARBER",
+                status: "ACTIVE"
             },
             select: {
                 id: true,

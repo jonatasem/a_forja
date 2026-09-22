@@ -25,7 +25,7 @@ export class ResetPasswordController {
       return reply.status(200).send(response);
     } catch (err) {
       return reply.status(400).send({
-        error: err instanceof Error ? err.message : "Erro ao redefinir a senha.",
+        error : "Erro ao redefinir a senha.",
       });
     }
   }

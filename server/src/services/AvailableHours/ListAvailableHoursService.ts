@@ -26,7 +26,7 @@ function minutesToTime(totalMinutes: number): string {
 export class ListAvailableHoursService {
   async execute({ barberId, serviceIds, date, slotStep = 30 }: ListAvailableHoursDTO) {
     const barber = await prisma.user.findUnique({ where: { id: barberId } });
-    if (!barber || barber.role !== "barber") {
+    if (!barber || barber.role !== "BARBER") {
       throw new Error("Barbeiro não encontrado.");
     }
 
@@ -57,7 +57,7 @@ export class ListAvailableHoursService {
     const searchDate = new Date(year, month - 1, day);
     const dayOfWeek = searchDate.getDay();
 
-    const workingHour = await prisma.workingHours.findFirst({
+    const workingHour = await prisma.workLoad.findFirst({
       where: { barberId, dayOfWeek, active: true },
     });
 
@@ -85,7 +85,7 @@ export class ListAvailableHoursService {
     });
 
     // 2. Busca bloqueios na agenda
-    const scheduleBlocks = await prisma.scheduleBlock.findMany({
+    const scheduleBlocks = await prisma.timeOff.findMany({
       where: {
         barberId,
         startTime: { lte: endOfDay },

@@ -23,7 +23,7 @@ export class UpdateAppointmentStatusService {
     }
 
     // Permite alteração apenas se o usuário for o barbeiro do agendamento ou um administrador
-    if (userRole !== "admin" && appointment.barberId !== userId) {
+    if (userRole !== "ADMIN" && appointment.barberId !== userId) {
       throw new Error("Você não tem permissão para alterar o status deste agendamento.");
     }
 

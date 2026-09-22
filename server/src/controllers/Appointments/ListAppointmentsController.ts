@@ -41,7 +41,7 @@ export class ListAppointmentsController {
       return reply.status(200).send(appointments);
     } catch (err) {
       return reply.status(400).send({
-        error: err instanceof Error ? err.message : "Erro inesperado ao listar agendamentos.",
+        error : "Erro inesperado ao listar agendamentos.",
       });
     }
   }

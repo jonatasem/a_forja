@@ -9,16 +9,16 @@ import { CreateUserController } from "../controllers/User/CreateUserController.j
 import { LoginUserController } from "../controllers/Login/LoginUserController.js";
 import { CreateServiceController } from "../controllers/Service/CreateServiceController.js";
 import { ListServiceController } from "../controllers/Service/ListServiceController.js";
-import { SetWorkingHoursController } from "../controllers/WorkLoad/CreateWorkLoadController.js";
+import { CreateWorkLoadController } from "../controllers/WorkLoad/CreateWorkLoadController.js";
 import { CreateAppointmentController } from "../controllers/Appointments/CreateAppointmentController.js";
 import { CancelAppointmentController } from "../controllers/Appointments/CancelAppointmentController.js";
 import { ListAvailableHoursController } from "../controllers/AvailableHours/ListAvailableHoursController.js";
-import { GetBarberController } from "../controllers/Barber/GetBarberController.js";
+import { ListBarberController } from "../controllers/Barber/ListBarberController.js";
 import { ListAppointmentsController } from "../controllers/Appointments/ListAppointmentsController.js";
 import { UpdateAppointmentStatusController } from "../controllers/Appointments/UpdateAppointmentStatusController.js";
 import { ForgotPasswordController } from "../controllers/PasswordReset/ForgotPasswordController.js";
 import { ResetPasswordController } from "../controllers/PasswordReset/ResetePasswordController.js";
-import { CreateScheduleBlockController } from "../controllers/ScheduleBlock/CreateScheduleBlockController.js";
+import { CreateTimeOffController } from "../controllers/TimeOff/TimeOffController.js";
 
 export async function routes(fastify: FastifyInstance) {
 
@@ -85,11 +85,11 @@ export async function routes(fastify: FastifyInstance) {
   );
 
   fastify.post(
-    "/working-hours",
+    "/work-load",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const setWorkingHoursController = new SetWorkingHoursController();
-      return setWorkingHoursController.handle(request, reply);
+      const createWorkLoadController = new CreateWorkLoadController();
+      return createWorkLoadController.handle(request, reply);
     }
   );
 
@@ -150,18 +150,18 @@ export async function routes(fastify: FastifyInstance) {
     "/barbers",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const getBarberController = new GetBarberController();
-      return getBarberController.handle(request, reply);
+      const listBarberController = new ListBarberController();
+      return listBarberController.handle(request, reply);
     }
   );
 
   // Bloqueio de agenda (Folgas / Exceções)
   fastify.post(
-    "/schedule-blocks",
+    "/time-off",
     { onRequest: [authenticate] },
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const createScheduleBlockController = new CreateScheduleBlockController();
-      return createScheduleBlockController.handle(request, reply);
+      const createTimeOffController = new CreateTimeOffController();
+      return createTimeOffController.handle(request, reply);
     }
   );
 

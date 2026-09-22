@@ -24,7 +24,7 @@ export class ForgotPasswordController {
       return reply.status(200).send(response);
     } catch (err) {
       return reply.status(400).send({
-        error: err instanceof Error ? err.message : "Erro ao solicitar recuperação de senha.",
+        error : "Erro ao solicitar recuperação de senha.",
       });
     }
   }

@@ -41,7 +41,7 @@ export class CreateAppointmentController {
       return reply.status(201).send(appointment);
     } catch (err) {
       return reply.status(400).send({
-        error: err instanceof Error ? err.message : "Erro inesperado ao criar agendamento.",
+        error : "Erro inesperado ao criar agendamento.",
       });
     }
   }

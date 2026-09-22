@@ -48,7 +48,7 @@ export class CreateAppointmentService {
     if (!client) throw new Error("Cliente não encontrado.");
 
     const barber = await prisma.user.findUnique({ where: { id: barberId } });
-    if (!barber || barber.role !== "barber") throw new Error("Barbeiro não encontrado.");
+    if (!barber || barber.role !== "BARBER") throw new Error("Barbeiro não encontrado.");
 
     // BUSCA TODOS OS SERVIÇOS SELECIONADOS
     const services = await prisma.service.findMany({
@@ -69,7 +69,7 @@ export class CreateAppointmentService {
     const appStartMinutes = hours * 60 + minutes;
     const appEndMinutes = appStartMinutes + totalDuration;
 
-    const workingHour = await prisma.workingHours.findFirst({
+    const workingHour = await prisma.workLoad.findFirst({
       where: { barberId, dayOfWeek, active: true },
     });
 
@@ -106,7 +106,7 @@ export class CreateAppointmentService {
     });
 
     // BUSCA BLOQUEIOS DE AGENDA
-    const scheduleBlocks = await prisma.scheduleBlock.findMany({
+    const scheduleBlocks = await prisma.timeOff.findMany({
       where: {
         barberId,
         startTime: { lte: endOfDay },
