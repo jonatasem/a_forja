@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { availableHoursService } from "../services/getAvailableHours";
+import { workLoadService } from "../services/workLoadService";
 
-export function useAvailableHours(barberId: string, serviceIds: string[]) {
+export function useWorkLoad(barberId: string, serviceIds: string[]) {
   const [date, setDate] = useState("");
   const [hours, setHours] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -19,14 +19,14 @@ export function useAvailableHours(barberId: string, serviceIds: string[]) {
       setLoading(true);
 
       try {
-        const data = await availableHoursService.getAvailableHours(
+        const data = await workLoadService.listWorkLoadService(
           barberId,
           serviceIds,
           selectedDate
         );
         setHours(data);
       } catch (error) {
-        console.error("Erro ao buscar horários disponíveis:", error);
+        console.error("Erro ao buscar carga de horários disponíveis:", error);
         setHours([]);
       } finally {
         setLoading(false);
