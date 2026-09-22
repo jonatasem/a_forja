@@ -26,7 +26,7 @@ export async function routes(fastify: FastifyInstance) {
   
   // Cria um novo cliente
   fastify.post(
-    "/client",
+    "/user",
     async (request: FastifyRequest, reply: FastifyReply) => {
       const createUserController = new CreateUserController();
       return createUserController.handle(request, reply);
