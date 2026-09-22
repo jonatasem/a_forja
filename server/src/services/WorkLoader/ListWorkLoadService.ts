@@ -1,36 +1,48 @@
 import { prisma } from "../../prisma/index.js";
 
-export interface ListAvailableHoursDTO {
+export interface ListWorkLoadProps {
   barberId: string;
   serviceIds: string[];
   date: string; // Formato: "YYYY-MM-DD"
-  slotStep?: number; // Padrão: 30 minutos
+  slotStep?: number; // Intervalo de grade em minutos entre os horários gerados (padrão 30 min)
 }
 
+// Representa um intervalo bloqueado no tempo em minutos a partir das 00:00 do dia
 interface OccupiedInterval {
   start: number;
   end: number;
 }
 
+/**
+ * Converte o horário no formato "HH:mm" em total de minutos a partir das 00:00.
+ */
 function timeToMinutes(time: string): number {
   const [hours = 0, minutes = 0] = time.split(":").map(Number);
   return hours * 60 + minutes;
 }
 
+/**
+ * Converte minutos a partir de 00:00 de volta para a string formatada "HH:mm".
+ */
 function minutesToTime(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
   const minutes = (totalMinutes % 60).toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
+  return `\({hours}:\){minutes}`;
 }
 
-export class ListAvailableHoursService {
-  async execute({ barberId, serviceIds, date, slotStep = 30 }: ListAvailableHoursDTO) {
+export class ListWorkLoadService {
+  /**
+   * Calcula e retorna uma lista de horários disponíveis ("HH:mm") para o barbeiro no dia informado,
+   * levando em consideração a soma da duração dos serviços escolhidos.
+   */
+  async execute({ barberId, serviceIds, date, slotStep = 30 }: ListWorkLoadProps) {
+    // 1. Valida existência do barbeiro
     const barber = await prisma.user.findUnique({ where: { id: barberId } });
     if (!barber || barber.role !== "BARBER") {
       throw new Error("Barbeiro não encontrado.");
     }
 
-    // Busca todos os serviços solicitados
+    // 2. Busca e valida os serviços selecionados
     const services = await prisma.service.findMany({
       where: {
         id: { in: serviceIds },
@@ -42,9 +54,10 @@ export class ListAvailableHoursService {
       throw new Error("Um ou mais serviços selecionados estão inativos ou não existem.");
     }
 
-    // SOMA TOTAL DA DURAÇÃO DOS SERVIÇOS
+    // Soma a duração total dos serviços
     const totalDuration = services.reduce((acc, service) => acc + service.duration, 0);
 
+    // Parse manual da string de data no formato "YYYY-MM-DD"
     const [yearStr, monthStr, dayStr] = date.split("-");
     if (!yearStr || !monthStr || !dayStr) {
       throw new Error("Data inválida. Use o formato YYYY-MM-DD.");
@@ -57,10 +70,12 @@ export class ListAvailableHoursService {
     const searchDate = new Date(year, month - 1, day);
     const dayOfWeek = searchDate.getDay();
 
+    // 3. Busca a jornada de trabalho do barbeiro no dia da semana
     const workingHour = await prisma.workLoad.findFirst({
       where: { barberId, dayOfWeek, active: true },
     });
 
+    // Se o barbeiro não atende neste dia, retorna lista vazia
     if (!workingHour) return [];
 
     const workStartMinutes = timeToMinutes(workingHour.startTime);
@@ -71,7 +86,7 @@ export class ListAvailableHoursService {
     const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
     const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
-    // 1. Busca agendamentos (Ajustado para relacionamentos N:N `services`)
+    // 4. Busca agendamentos ativos marcados para este dia
     const existingAppointments = await prisma.appointment.findMany({
       where: {
         barberId,
@@ -84,7 +99,7 @@ export class ListAvailableHoursService {
       },
     });
 
-    // 2. Busca bloqueios na agenda
+    // 5. Busca bloqueios de agenda que coincidem com a data
     const scheduleBlocks = await prisma.timeOff.findMany({
       where: {
         barberId,
@@ -95,7 +110,7 @@ export class ListAvailableHoursService {
 
     const occupiedIntervals: OccupiedInterval[] = [];
 
-    // Mapeia agendamentos somando a duração dos seus serviços
+    // Mapeia os agendamentos existentes para intervalos ocupados em minutos
     existingAppointments.forEach((app) => {
       const appDate = new Date(app.date);
       const start = appDate.getHours() * 60 + appDate.getMinutes();
@@ -104,15 +119,19 @@ export class ListAvailableHoursService {
       occupiedIntervals.push({ start, end });
     });
 
-    // Mapeia bloqueios
+    // Mapeia os bloqueios (TimeOff) ajustando os minutos em relação às 00:00 do dia pesquisado
+    const startOfDayMs = startOfDay.getTime();
     scheduleBlocks.forEach((block) => {
-      const blockStart = new Date(block.startTime);
-      const blockEnd = new Date(block.endTime);
-      const start = blockStart.getHours() * 60 + blockStart.getMinutes();
-      const end = blockEnd.getHours() * 60 + blockEnd.getMinutes();
+      const blockStartMs = new Date(block.startTime).getTime();
+      const blockEndMs = new Date(block.endTime).getTime();
+
+      const start = Math.max(0, Math.floor((blockStartMs - startOfDayMs) / 60000));
+      const end = Math.min(1440, Math.ceil((blockEndMs - startOfDayMs) / 60000));
+
       occupiedIntervals.push({ start, end });
     });
 
+    // Identifica se a busca é para o dia de hoje (para filtrar horários que já passaram)
     const now = new Date();
     const isToday =
       searchDate.getFullYear() === now.getFullYear() &&
@@ -122,7 +141,7 @@ export class ListAvailableHoursService {
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const availableHours: string[] = [];
 
-    // Percorre os horários verificando a janela total de tempo necessária
+    // 6. Varre a jornada do barbeiro em passos (ex: de 30 em 30 min) testando se a janela inteira do serviço cabe no horário
     for (
       let current = workStartMinutes;
       current + totalDuration <= workEndMinutes;
@@ -131,23 +150,24 @@ export class ListAvailableHoursService {
       const slotStart = current;
       const slotEnd = current + totalDuration;
 
-      // Ignora horários passados do dia atual
+      // Se for o dia atual, desconsidera horários retroativos
       if (isToday && slotStart <= currentMinutes) {
         continue;
       }
 
-      // Valida interseção com pausa/almoço do barbeiro
+      // Desconsidera horários que interceptem o intervalo/almoço
       if (breakStartMinutes !== null && breakEndMinutes !== null) {
         if (slotStart < breakEndMinutes && slotEnd > breakStartMinutes) {
           continue;
         }
       }
 
-      // Valida conflitos com agendamentos existentes ou bloqueios
+      // Desconsidera horários que tenham sobreposição com agendamentos ou bloqueios
       const hasConflict = occupiedIntervals.some(
         (interval) => slotStart < interval.end && slotEnd > interval.start
       );
 
+      // Se passou por todas as regras, o horário está liberado
       if (!hasConflict) {
         availableHours.push(minutesToTime(slotStart));
       }

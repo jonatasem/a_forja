@@ -1,10 +1,11 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import { ListAvailableHoursService } from "../../services/AvailableHours/ListAvailableHoursService.js";
+import { ListWorkLoadService } from "../../services/WorkLoader/ListWorkLoadService.js";
 
-export const listAvailableHoursQuerySchema = z.object({
+// Schema de validação dos parâmetros de query (Query Parameters)
+export const listWorkLoadSchema = z.object({
   barberId: z.string().min(1, { message: "O ID do barbeiro é obrigatório." }),
-  // Aceita uma string única de ID, uma lista tratada como array ou IDs separados por vírgula
+  // Preprocessa a entrada: transforma strings separadas por vírgula em array ou mantém array
   serviceIds: z
     .preprocess((val) => {
       if (typeof val === "string") return val.split(",").map((s) => s.trim());
@@ -18,9 +19,12 @@ export const listAvailableHoursQuerySchema = z.object({
   }),
 });
 
-export class ListAvailableHoursController {
+export class ListWorkLoadController {
+  /**
+   * Controller responsável por receber as buscas por horários disponíveis de um barbeiro em um dia.
+   */
   async handle(request: FastifyRequest, reply: FastifyReply) {
-    const result = listAvailableHoursQuerySchema.safeParse(request.query);
+    const result = listWorkLoadSchema.safeParse(request.query);
 
     if (!result.success) {
       const { fieldErrors } = z.flattenError(result.error);
@@ -34,8 +38,8 @@ export class ListAvailableHoursController {
     const { barberId, serviceIds, date } = result.data;
 
     try {
-      const listAvailableHoursService = new ListAvailableHoursService();
-      const availableHours = await listAvailableHoursService.execute({
+      const listWorkLoadService = new ListWorkLoadService();
+      const availableHours = await listWorkLoadService.execute({
         barberId,
         serviceIds,
         date,
@@ -44,7 +48,7 @@ export class ListAvailableHoursController {
       return reply.status(200).send(availableHours);
     } catch (err) {
       return reply.status(400).send({
-        error : "Erro inesperado ao listar horários disponíveis.",
+        error: err instanceof Error ? err.message : "Erro inesperado ao listar horários disponíveis.",
       });
     }
   }

@@ -1,28 +1,30 @@
 import { prisma } from "../../prisma/index.js";
 
-export interface CreateAppointmentDTO {
+export interface CreateAppointmentProps {
   clientId: string;
   barberId: string;
   serviceIds: string[];
   date: string | Date;
 }
 
+// Converte o horário no formato string "HH:mm" em total de minutos a partir de 00:00. Exemplo: "01:30" -> 90 minutos.
 function timeToMinutes(time: string): number {
   const [hours = 0, minutes = 0] = time.split(":").map(Number);
   return hours * 60 + minutes;
 }
 
 export class CreateAppointmentService {
-  async execute({ clientId, barberId, serviceIds, date }: CreateAppointmentDTO) {
+  async execute({ clientId, barberId, serviceIds, date }: CreateAppointmentProps) {
     let year: number, month: number, day: number, hours: number, minutes: number;
 
+    // Extração manual das partes da data para evitar distorção de fuso horário
     if (typeof date === "string") {
       const [datePart, timePart = "00:00"] = date.split(/[T ]/);
       const [y, m, d] = (datePart ?? "").split("-").map(Number);
       const [h, min] = (timePart ?? "").split(":").map(Number);
 
       year = y ?? 0;
-      month = (m ?? 1) - 1;
+      month = (m ?? 1) - 1; // Mês no JS começa em 0 (Janeiro = 0, Fevereiro = 1, etc.)
       day = d ?? 1;
       hours = h ?? 0;
       minutes = min ?? 0;
@@ -36,6 +38,7 @@ export class CreateAppointmentService {
 
     const appointmentDate = new Date(year, month, day, hours, minutes);
 
+    // Validações básicas da data fornecida
     if (isNaN(appointmentDate.getTime())) {
       throw new Error("Data ou horário fornecido é inválido.");
     }
@@ -44,13 +47,15 @@ export class CreateAppointmentService {
       throw new Error("Não é possível criar agendamentos em datas passadas.");
     }
 
+    // Valida se o cliente existe no banco de dados
     const client = await prisma.user.findUnique({ where: { id: clientId } });
     if (!client) throw new Error("Cliente não encontrado.");
 
+    // Valida se o barbeiro existe e possui a role correta
     const barber = await prisma.user.findUnique({ where: { id: barberId } });
     if (!barber || barber.role !== "BARBER") throw new Error("Barbeiro não encontrado.");
 
-    // BUSCA TODOS OS SERVIÇOS SELECIONADOS
+    // Busca os serviços solicitados que estejam ativos
     const services = await prisma.service.findMany({
       where: {
         id: { in: serviceIds },
@@ -62,13 +67,14 @@ export class CreateAppointmentService {
       throw new Error("Um ou mais serviços selecionados estão inativos ou não existem.");
     }
 
-    // SOMA A DURAÇÃO TOTAL DE TODOS OS SERVIÇOS SELECIONADOS
+    // Soma a duração individual de todos os serviços selecionados
     const totalDuration = services.reduce((acc, s) => acc + s.duration, 0);
 
-    const dayOfWeek = appointmentDate.getDay();
+    const dayOfWeek = appointmentDate.getDay(); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
     const appStartMinutes = hours * 60 + minutes;
     const appEndMinutes = appStartMinutes + totalDuration;
 
+    // Busca o expediente cadastrado para o barbeiro neste dia da semana
     const workingHour = await prisma.workLoad.findFirst({
       where: { barberId, dayOfWeek, active: true },
     });
@@ -82,20 +88,23 @@ export class CreateAppointmentService {
     const breakStartMinutes = workingHour.breakStart ? timeToMinutes(workingHour.breakStart) : null;
     const breakEndMinutes = workingHour.breakEnd ? timeToMinutes(workingHour.breakEnd) : null;
 
+    // Valida se o agendamento está totalmente contido no horário de expediente
     if (appStartMinutes < workStartMinutes || appEndMinutes > workEndMinutes) {
       throw new Error("O tempo total do serviço ultrapassa o horário de expediente.");
     }
 
+    // Valida se o agendamento entra em conflito com a pausa/almoço (caso haja pausa cadastrada)
     if (breakStartMinutes !== null && breakEndMinutes !== null) {
       if (appStartMinutes < breakEndMinutes && appEndMinutes > breakStartMinutes) {
         throw new Error("O tempo total do serviço entra em conflito com o intervalo do barbeiro.");
       }
     }
 
+    // Define os limites exatos do dia para busca de agendamentos e bloqueios existentes
     const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
     const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
 
-    // BUSCA AGENDAMENTOS EXISTENTES (USA 'services' NO PLURAL)
+    // Busca agendamentos ativos já existentes para este barbeiro no mesmo dia
     const existingAppointments = await prisma.appointment.findMany({
       where: {
         barberId,
@@ -105,7 +114,7 @@ export class CreateAppointmentService {
       include: { services: true },
     });
 
-    // BUSCA BLOQUEIOS DE AGENDA
+    // Busca bloqueios de agenda (TimeOff) do barbeiro que cobrem este dia
     const scheduleBlocks = await prisma.timeOff.findMany({
       where: {
         barberId,
@@ -114,7 +123,7 @@ export class CreateAppointmentService {
       },
     });
 
-    // VALIDA CONFLITO COM OUTROS AGENDAMENTOS
+    // Valida colisão entre o novo agendamento e outros agendamentos existentes
     const hasAppointmentConflict = existingAppointments.some((app) => {
       const appDate = new Date(app.date);
       const start = appDate.getHours() * 60 + appDate.getMinutes();
@@ -127,20 +136,21 @@ export class CreateAppointmentService {
       throw new Error("Este horário já foi reservado ou ultrapassa outro agendamento.");
     }
 
-    // VALIDA CONFLITO COM BLOQUEIOS MANUAIS
+    // Valida colisão com bloqueios manuais de horário (TimeOff) via comparação de timestamps absolutos
+    const appStartMs = appointmentDate.getTime();
+    const appEndMs = appStartMs + totalDuration * 60 * 1000;
+
     const hasBlockConflict = scheduleBlocks.some((block) => {
-      const blockStart = new Date(block.startTime);
-      const blockEnd = new Date(block.endTime);
-      const start = blockStart.getHours() * 60 + blockStart.getMinutes();
-      const end = blockEnd.getHours() * 60 + blockEnd.getMinutes();
-      return appStartMinutes < end && appEndMinutes > start;
+      const blockStartMs = new Date(block.startTime).getTime();
+      const blockEndMs = new Date(block.endTime).getTime();
+      return appStartMs < blockEndMs && appEndMs > blockStartMs;
     });
 
     if (hasBlockConflict) {
       throw new Error("Horário indisponível devido a um bloqueio na agenda do barbeiro.");
     }
 
-    // CRIA O AGENDAMENTO COM A LISTA DE SERVIÇOS
+    // Se todas as regras forem satisfeitas, grava o agendamento no banco
     return await prisma.appointment.create({
       data: {
         clientId,

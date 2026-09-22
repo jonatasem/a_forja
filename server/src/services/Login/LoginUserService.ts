@@ -43,7 +43,7 @@ export class LoginUserService {
       secret,
       {
         subject: user.id,
-        expiresIn: "2h",
+        expiresIn: "8h",
       }
     );
 
