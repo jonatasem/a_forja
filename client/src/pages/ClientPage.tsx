@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 import { 
   Calendar, 
   X, 
@@ -11,7 +12,8 @@ import {
   ChevronRight,
   ShieldCheck,
   Award,
-  Users
+  Users,
+  LogOut
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
 import heroImg from "../assets/heroa.png";
@@ -21,6 +23,9 @@ export function ClientPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Extrai utilizador e função de logout do hook de autenticação
+  const { user, signOut } = useAuth();
 
   // Efeito para mudar o fundo da navbar ao rolar
   useEffect(() => {
@@ -89,14 +94,33 @@ export function ClientPage() {
             <a href="#contato" className="hover:text-amber-400 transition-colors">Contato</a>
           </nav>
 
-          {/* BOTÃO HEADER (CTA) */}
-          <div className="hidden lg:block">
+          {/* BOTÕES E PERFIL HEADER (DESKTOP) */}
+          <div className="hidden lg:flex items-center gap-4">
             <button
               onClick={handleOpenAppointment}
               className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs tracking-wider uppercase transition-all shadow-lg shadow-amber-950/50 hover:shadow-amber-500/20 hover:-translate-y-0.5 active:translate-y-0"
             >
               Agendar Agora
             </button>
+
+            {user ? (
+              <div className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 rounded-xl p-1.5 pr-3">
+                <button
+                  onClick={signOut}
+                  title="Sair"
+                  className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <a
+                href="/login"
+                className="text-xs font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors px-3 py-2"
+              >
+                Entrar
+              </a>
+            )}
           </div>
 
           {/* BOTÃO MOBILE */}
@@ -129,6 +153,28 @@ export function ClientPage() {
           >
             Agendar Horário
           </button>
+
+          {/* AÇÃO AUTH MOBILE */}
+          {user ? (
+            <button 
+              onClick={() => {
+                setIsMenuOpen(false);
+                signOut();
+              }}
+              className="w-full py-3 bg-zinc-900 border border-zinc-800 text-red-400 font-bold uppercase rounded-xl flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Sair
+            </button>
+          ) : (
+            <a 
+              href="/login"
+              onClick={() => setIsMenuOpen(false)}
+              className="w-full py-3 bg-zinc-900 border border-amber-500/30 text-amber-400 font-bold uppercase rounded-xl block text-center"
+            >
+              Acessar Minha Conta
+            </a>
+          )}
         </div>
       )}
 
@@ -162,6 +208,13 @@ export function ClientPage() {
                 É FORJADO
               </span>
             </h1>
+
+            {/* MENSAGEM DE BOAS-VINDAS DINÂMICA */}
+            {user?.name && (
+              <p className="text-amber-400 font-semibold text-sm tracking-wide">
+                Bem vindo de volta, <span className=" decoration-amber-500/50 text-white/70">{user.name}</span>!
+              </p>
+            )}
 
             <p className="text-sm md:text-base text-zinc-300 font-light tracking-wide max-w-xl leading-relaxed">
               Mais que uma barbearia, um ambiente de convivência, alta precisão e respeito à sua identidade. Agende em poucos cliques.
@@ -232,7 +285,7 @@ export function ClientPage() {
                 <Scissors className="w-4 h-4" /> Nossa História
               </span>
               <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white leading-tight">
-                MISTURA DE TRADIÇÃO, CAFE E CULTURA MASCULINA
+                MISTURA DE TRADIÇÃO, CAFÉ E CULTURA MASCULINA
               </h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
                 Na <strong className="text-amber-400 font-semibold">Corvelloni • A Forja</strong>, entendemos que o corte de cabelo e o alinhamento da barba não são apenas estética — são um ritual de renovação e confiança.
@@ -258,7 +311,6 @@ export function ClientPage() {
           </div>
         </div>
       </section>
-
       {/* SERVIÇOS & PREÇOS */}
       <section id="servicos" className="py-24 bg-[#070708] relative border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6">
@@ -314,7 +366,7 @@ export function ClientPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16 space-y-3">
             <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-500 flex items-center justify-center gap-2">
-              <p> Siga-nos no Instagram</p>
+              Icon do Instagram
             </span>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
               FORJADOS NO INSTAGRAM
@@ -336,7 +388,7 @@ export function ClientPage() {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-75"
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 text-white p-4 text-center">
-                  <p>icom insta</p>
+                  Icon do Instagram
                   <span className="text-xs font-bold uppercase tracking-wider">{post.tag}</span>
                   <span className="text-[10px] text-zinc-300">{post.alt}</span>
                 </div>
@@ -345,6 +397,7 @@ export function ClientPage() {
           </div>
         </div>
       </section>
+
       {/* AVALIAÇÕES */}
       <section id="avaliacoes" className="py-24 bg-[#070708] border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6">

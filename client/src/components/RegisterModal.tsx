@@ -1,171 +1,168 @@
-import { useState } from "react";
-import { api } from "../services/api";
-import { AxiosError } from "axios";
+import React, { useState } from 'react';
+import { useCreateUser } from '../hooks/useCreateService';
+import { X } from 'lucide-react';
 
-interface RegisterModalProps {
+interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export const RegisterModal: React.FC<CreateUserModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+}) => {
+  const { handleCreateUser, loading, error, resetState } = useCreateUser();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    password: '',
+  });
 
   if (!isOpen) return null;
 
-  function handleClose() {
-    setName("");
-    setPhone("");
-    setEmail("");
-    setPassword("");
-    setError(null);
-    setSuccess(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleClose = () => {
+    resetState();
+    setFormData({ name: '', phone: '', email: '', password: '' });
     onClose();
-  }
+  };
 
-    async function handleSubmit(e: React.SubmitEvent) {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        try {
-        await api.post("/users", {
-            name,
-            phone,
-            email,
-            password,
-        });
+    const user = await handleCreateUser(formData);
 
-        setSuccess(true);
-        } catch (err) {
-        const error = err as AxiosError<{ message?: string }>;
-        setError(
-            error.response?.data?.message || "Erro ao cadastrar usuário. Tente novamente."
-        );
-        } finally {
-        setLoading(false);
-        }
+    if (user) {
+      if (onSuccess) onSuccess();
+      handleClose();
     }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-      <div className="w-full max-w-md rounded-2xl bg-[#121215] border border-amber-500/20 shadow-2xl text-white p-6 sm:p-8 flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      
+      {/* Container do Modal */}
+      <div className="relative w-full max-w-md rounded-3xl bg-[#121215] border border-amber-500/20 shadow-2xl p-6 sm:p-8 overflow-hidden">
         
+        {/* Efeito de luz decorativo */}
+        <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-amber-500/10 blur-2xl pointer-events-none" />
+
+        {/* Botão de Fechar */}
+        <button
+          onClick={handleClose}
+          className="absolute top-5 right-5 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+          aria-label="Fechar"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
-          <h2 className="text-lg font-serif font-bold tracking-wide text-zinc-100">
-            Criar Conta
-          </h2>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
-          >
-            ✕
-          </button>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-white tracking-wide">Criar Nova Conta</h2>
+          <p className="text-xs text-zinc-400 mt-1">
+            Preencha os dados abaixo para se cadastrar
+          </p>
         </div>
 
-        {/* Estado de Sucesso */}
-        {success ? (
-          <div className="py-8 text-center space-y-4">
-            <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center text-2xl font-bold mx-auto shadow-lg shadow-emerald-950/20">
-              ✓
-            </div>
-            <h3 className="text-base font-bold text-white">
-              Conta criada com sucesso!
-            </h3>
-            <p className="text-xs text-zinc-400 max-w-xs mx-auto">
-              Agora você já pode fazer login utilizando seu telefone e senha.
-            </p>
+        {/* Mensagem de Erro */}
+        {error && (
+          <div className="mb-5 rounded-xl bg-red-500/10 border border-red-500/20 p-3.5 text-xs text-red-400 text-center font-medium">
+            {error}
+          </div>
+        )}
+
+        {/* Formulário */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
+              Nome Completo
+            </label>
+            <input
+              type="text"
+              name="name"
+              required
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Digite seu nome completo"
+              className="w-full rounded-xl bg-[#09090b] border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all shadow-inner"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
+              Telefone
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              required
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="(00) 00000-0000"
+              className="w-full rounded-xl bg-[#09090b] border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all shadow-inner"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
+              E-mail
+            </label>
+            <input
+              type="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="seu@email.com"
+              className="w-full rounded-xl bg-[#09090b] border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all shadow-inner"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
+              Senha
+            </label>
+            <input
+              type="password"
+              name="password"
+              required
+              minLength={6}
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Crie uma senha (mín. 6 caracteres)"
+              className="w-full rounded-xl bg-[#09090b] border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all shadow-inner"
+            />
+          </div>
+
+          {/* Botões de Ação */}
+          <div className="pt-2 flex items-center gap-3">
             <button
               type="button"
               onClick={handleClose}
-              className="mt-4 px-8 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all"
+              className="w-1/3 rounded-xl border border-zinc-800 bg-zinc-900/50 py-3.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all"
             >
-              Ir para o Login
+              Cancelar
+            </button>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-2/3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-amber-950/40 hover:from-amber-500 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {loading ? 'Cadastrando...' : 'Cadastrar'}
             </button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium text-center">
-                {error}
-              </div>
-            )}
+        </form>
 
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
-                Nome Completo
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="Seu nome"
-                className="w-full rounded-xl bg-[#09090b] border border-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
-                Telefone (WhatsApp)
-              </label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                placeholder="(00) 00000-0000"
-                className="w-full rounded-xl bg-[#09090b] border border-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
-                E-mail (opcional)
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu.email@exemplo.com"
-                className="w-full rounded-xl bg-[#09090b] border border-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
-                Senha
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full rounded-xl bg-[#09090b] border border-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all"
-              />
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-amber-900/30 hover:from-amber-500 hover:to-amber-600 disabled:opacity-50 transition-all"
-              >
-                {loading ? "Cadastrando..." : "Confirmar Cadastro"}
-              </button>
-            </div>
-          </form>
-        )}
       </div>
     </div>
   );
-}
+};
