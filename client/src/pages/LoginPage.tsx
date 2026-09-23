@@ -127,7 +127,7 @@ export function LoginPage() {
           </form>
 
           {/* Divisor */}
-          <div className="my-6 flex items-center justify-center gap-3">
+          <div className="my-4 flex items-center justify-center gap-3">
             <div className="h-px flex-1 bg-zinc-800/80" />
             <span className="text-[10px] uppercase text-zinc-500 tracking-wider">ou</span>
             <div className="h-px flex-1 bg-zinc-800/80" />
