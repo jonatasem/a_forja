@@ -54,12 +54,12 @@ export function ClientPage() {
     { id: 2, url: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600", alt: "Corte clássico", tag: "@corvelloni_forja" },
     { id: 3, url: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=600", alt: "Barba e toalha quente", tag: "@corvelloni_forja" },
     { id: 4, url: "https://images.unsplash.com/photo-1593702295094-aea22597af65?q=80&w=600", alt: "Corte moderno", tag: "@corvelloni_forja" },
-    { id: 5, url: "https://images.unsplash.com/photo-1517832606589-7a598b3895c6?q=80&w=600", alt: "Fade cabelo e barba", tag: "@corvelloni_forja" },
-    { id: 6, url: "https://images.unsplash.com/photo-1605497746444-ac9dbd324d48?q=80&w=600", alt: "Trabalho de tesoura", tag: "@corvelloni_forja" },
+    { id: 5, url: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=600", alt: "Fade cabelo e barba", tag: "@corvelloni_forja" },
+    { id: 6, url: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600", alt: "Trabalho de tesoura", tag: "@corvelloni_forja" },
   ];
 
   const testimonials = [
-    { name: "Ricardo Alves", role: "Cliente Fiel", comment: "O melhor atendimento da região. A experiência da toalha quente na barba é incomparável!", rating: 5 },
+    { name: "Ricardo Alves", role: "Cliente", comment: "O melhor atendimento da região. A experiência da toalha quente na barba é incomparável!", rating: 5 },
     { name: "Matheus Silva", role: "Cliente", comment: "Pontualidade e profissionalismo nota 10. O ambiente é muito agradável e o café é excelente.", rating: 5 },
     { name: "Lucas Mendes", role: "Cliente", comment: "Barbeiros realmente mestres no que fazem. Não troco a Corvelloni por nada.", rating: 5 },
   ];
@@ -70,8 +70,8 @@ export function ClientPage() {
       {/* HEADER / NAVBAR FIXA REFEITA */}
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? "bg-[#0c0c0e]/90 backdrop-blur-md border-b border-amber-500/20 py-3 shadow-2xl shadow-black/80" 
-          : "bg-transparent py-2"
+          ? "bg-[#0c0c0e]/90 backdrop-blur-md border-b border-amber-500/20 shadow-2xl shadow-black/80" 
+          : "bg-transparent"
       }`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
              

@@ -6,13 +6,18 @@ import {
   type ResetPasswordRequest,
 } from '../services/resetPasswordService';
 
+interface BackendErrorResponse {
+  error?: string;
+  message?: string;
+}
+
 export function useResetPassword() {
   const [step, setStep] = useState<'request' | 'reset'>('request');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Armazena o token para o caso do backend retornar o token direto no teste/fluxo sem e-mail
+  // Armazena o token vindo da API
   const [token, setToken] = useState<string>('');
 
   /**
@@ -31,13 +36,16 @@ export function useResetPassword() {
         setToken(response.token);
       }
 
-      // Avança para a próxima etapa no modal
+      // Avança para a etapa de redefinição
       setStep('reset');
     } catch (err) {
-      const apiError = err as AxiosError<{ message?: string }>;
-      setError(
-        apiError.response?.data?.message || apiError.message || 'Erro ao solicitar recuperação de senha.'
-      );
+      const apiError = err as AxiosError<BackendErrorResponse>;
+      const errorMessage =
+        apiError.response?.data?.error ||
+        apiError.response?.data?.message ||
+        'Erro ao solicitar recuperação de senha.';
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -54,12 +62,15 @@ export function useResetPassword() {
     try {
       const response = await resetPasswordService.resetPassword(data);
       setSuccessMessage(response.message);
-      return true; // Retorna true para indicar que concluiu com sucesso
+      return true;
     } catch (err) {
-      const apiError = err as AxiosError<{ message?: string }>;
-      setError(
-        apiError.response?.data?.message || apiError.message || 'Erro ao redefinir a senha.'
-      );
+      const apiError = err as AxiosError<BackendErrorResponse>;
+      const errorMessage =
+        apiError.response?.data?.error ||
+        apiError.response?.data?.message ||
+        'Erro ao redefinir a senha.';
+
+      setError(errorMessage);
       return false;
     } finally {
       setLoading(false);
