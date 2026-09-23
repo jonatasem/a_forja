@@ -71,7 +71,7 @@ export function ClientPage() {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
           ? "bg-[#0c0c0e]/90 backdrop-blur-md border-b border-amber-500/20 py-3 shadow-2xl shadow-black/80" 
-          : "bg-transparent py-5"
+          : "bg-transparent py-2"
       }`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
              
@@ -95,10 +95,10 @@ export function ClientPage() {
           </nav>
 
           {/* BOTÕES E PERFIL HEADER (DESKTOP) */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4 ">
             <button
               onClick={handleOpenAppointment}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs tracking-wider uppercase transition-all shadow-lg shadow-amber-950/50 hover:shadow-amber-500/20 hover:-translate-y-0.5 active:translate-y-0"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs tracking-wider uppercase transition-all shadow-lg shadow-amber-950/50 hover:shadow-amber-500/20 hover:-translate-y-0.5 active:translate-y-0  cursor-pointer"
             >
               Agendar Agora
             </button>
@@ -108,7 +108,7 @@ export function ClientPage() {
                 <button
                   onClick={signOut}
                   title="Sair"
-                  className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors"
+                  className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>

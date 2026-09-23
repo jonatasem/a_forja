@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useCreateUser } from '../hooks/useCreateService';
+import { useCreateUser } from '../hooks/useCreateUser';
 import { X } from 'lucide-react';
 
 interface CreateUserModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
+  isOpen: boolean;       // Controla se o modal deve ser exibido
+  onClose: () => void;   // Callback executado ao fechar o modal
+  onSuccess?: () => void;// Callback opcional após criação com sucesso
 }
 
 export const RegisterModal: React.FC<CreateUserModalProps> = ({
@@ -13,8 +13,10 @@ export const RegisterModal: React.FC<CreateUserModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  // Desestrutura do hook as funções e estados necessários
   const { handleCreateUser, loading, error, resetState } = useCreateUser();
 
+  // Estado local para controle dos campos do formulário
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -22,24 +24,36 @@ export const RegisterModal: React.FC<CreateUserModalProps> = ({
     password: '',
   });
 
+  // Se o modal estiver fechado, não renderiza nada na árvore de componentes
   if (!isOpen) return null;
 
+  /**
+   * Atualiza dinamicamente a chave do estado correspondente ao campo alterado
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Reseta os campos e erros, e aciona a propriedade onClose
+   */
   const handleClose = () => {
     resetState();
     setFormData({ name: '', phone: '', email: '', password: '' });
     onClose();
   };
 
+  /**
+   * Submete o formulário, aciona a API e gerencia o encerramento do modal
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Chama o hook para enviar os dados à rota POST /user
     const user = await handleCreateUser(formData);
 
+    // Se o retorno for um objeto válido (sucesso), executa callbacks de finalização
     if (user) {
       if (onSuccess) onSuccess();
       handleClose();
@@ -72,7 +86,7 @@ export const RegisterModal: React.FC<CreateUserModalProps> = ({
           </p>
         </div>
 
-        {/* Mensagem de Erro */}
+        {/* Exibição condicional de mensagem de erro retornado pela API */}
         {error && (
           <div className="mb-5 rounded-xl bg-red-500/10 border border-red-500/20 p-3.5 text-xs text-red-400 text-center font-medium">
             {error}
