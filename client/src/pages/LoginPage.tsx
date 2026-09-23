@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import { RegisterModal } from "../components/RegisterModal";
+import { ResetPasswordModal } from "../components/ResetPasswordModal";
 import logoImg from "../assets/logo.png";
 
 export function LoginPage() {
@@ -15,9 +16,10 @@ export function LoginPage() {
   } = useLogin();
 
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
 
   function handleForgotPassword() {
-    alert("Para redefinir sua senha, entre em contato via WhatsApp da barbearia.");
+    setIsResetPasswordOpen(true);
   }
 
   return (
@@ -27,10 +29,10 @@ export function LoginPage() {
       <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-amber-600/10 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-amber-700/10 blur-3xl pointer-events-none" />
 
-      {/* Card Principal: Layout em Grid no Desktop / 1 Coluna no Mobile */}
+      {/* Card Principal */}
       <div className="relative w-full max-w-4xl rounded-3xl bg-[#121215] border border-amber-500/20 shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 backdrop-blur-md">
         
-        {/* COLUNA DA ESQUERDA: Marca / Apresentação (Visível em Desktop) */}
+        {/* COLUNA DA ESQUERDA */}
         <div className="hidden md:flex flex-col justify-between p-10 bg-gradient-to-br from-[#18181c] to-[#0d0d0f] border-r border-amber-500/10 relative overflow-hidden">
           <div className="absolute inset-0 bg-amber-500/5 blur-2xl pointer-events-none" />
           
@@ -52,10 +54,9 @@ export function LoginPage() {
           </div>
         </div>
 
-        {/* COLUNA DA DIREITA: Formulário */}
+        {/* COLUNA DA DIREITA */}
         <div className="p-8 sm:p-10 flex flex-col justify-center">
           
-          {/* Logo no topo apenas no celular */}
           <div className="md:hidden mb-6 flex flex-col items-center text-center">
             <img 
               src={logoImg} 
@@ -71,14 +72,12 @@ export function LoginPage() {
             </p>
           </div>
 
-          {/* Mensagem de Erro */}
           {error && (
             <div className="mb-5 rounded-xl bg-red-500/10 border border-red-500/20 p-3.5 text-xs text-red-400 text-center font-medium">
               {error}
             </div>
           )}
 
-          {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-amber-500/90 mb-1.5">
@@ -126,14 +125,12 @@ export function LoginPage() {
             </button>
           </form>
 
-          {/* Divisor */}
           <div className="my-4 flex items-center justify-center gap-3">
             <div className="h-px flex-1 bg-zinc-800/80" />
             <span className="text-[10px] uppercase text-zinc-500 tracking-wider">ou</span>
             <div className="h-px flex-1 bg-zinc-800/80" />
           </div>
 
-          {/* Botão de Cadastro */}
           <button
             type="button"
             onClick={() => setIsRegisterOpen(true)}
@@ -142,7 +139,6 @@ export function LoginPage() {
             Criar nova conta
           </button>
 
-          {/* Rodapé Mobile */}
           <div className="mt-8 text-center md:hidden">
             <p className="text-[10px] text-zinc-600 uppercase tracking-widest">
               Corvelloni • A Forja © {new Date().getFullYear()}
@@ -153,10 +149,15 @@ export function LoginPage() {
 
       </div>
 
-      {/* Modal de Registro */}
+      {/* Modais */}
       <RegisterModal 
         isOpen={isRegisterOpen} 
         onClose={() => setIsRegisterOpen(false)} 
+      />
+
+      <ResetPasswordModal
+        isOpen={isResetPasswordOpen}
+        onClose={() => setIsResetPasswordOpen(false)}
       />
     </div>
   );
