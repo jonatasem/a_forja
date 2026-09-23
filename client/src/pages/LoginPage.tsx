@@ -55,13 +55,13 @@ export function LoginPage() {
         </div>
 
         {/* COLUNA DA DIREITA */}
-        <div className="p-8 sm:p-10 flex flex-col justify-center">
+        <div className="p-5 sm:p-10 flex flex-col justify-center">
           
           <div className="md:hidden mb-6 flex flex-col items-center text-center">
             <img 
               src={logoImg} 
               alt="Corvelloni A Forja" 
-              className="w-40 h-auto object-contain drop-shadow-[0_4px_20px_rgba(217,119,6,0.2)] mb-2" 
+              className="w-30 object-contain drop-shadow-[0_4px_20px_rgba(217,119,6,0.2)]" 
             />
           </div>
 
