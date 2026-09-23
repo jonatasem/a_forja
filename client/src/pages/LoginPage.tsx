@@ -54,7 +54,7 @@ export function LoginPage() {
           </div>
         </div>
 
-        {/* COLUNA DA DIREITA */}
+          {/* Card Mobile */}
         <div className="p-5 sm:p-10 flex flex-col justify-center">
           
           <div className="md:hidden mb-6 flex flex-col items-center text-center">
@@ -84,7 +84,8 @@ export function LoginPage() {
                 Telefone
               </label>
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
